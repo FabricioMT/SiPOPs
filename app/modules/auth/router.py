@@ -5,8 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
 from app.modules.auth.models import User
-from app.modules.auth.schemas import UserCreate, UserResponse, Token
+from app.modules.auth.schemas import (
+    UserCreate, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest
+)
 from app.modules.auth import service
+from app.modules.auth.utils import create_password_reset_token, send_reset_password_email
+
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -72,3 +76,41 @@ async def get_current_user_info(
     Requires a valid JWT token in the Authorization header.
     """
     return current_user
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Request a password reset token to be sent via email.
+    """
+    user = await service.get_user_by_email(db, request.email)
+    if not user:
+        # To prevent email enumeration, we return 200 even if the user is not found.
+        return {"msg": "If the email is registered, a password reset link will be sent."}
+    
+    # Generate token and simulate email sending
+    token = create_password_reset_token(email=user.email)
+    send_reset_password_email(email=user.email, token=token)
+    
+    return {"msg": "If the email is registered, a password reset link will be sent."}
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Reset password using the token sent via email.
+    """
+    updated_user = await service.reset_user_password(db, request.token, request.new_password)
+    if not updated_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token."
+        )
+    
+    return {"msg": "Password updated successfully."}

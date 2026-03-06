@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import get_password_hash, verify_password
 from app.modules.auth.models import User
 from app.modules.auth.schemas import UserCreate
+from app.modules.auth.utils import verify_password_reset_token
+
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
@@ -87,5 +89,33 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Opti
     
     if not user.is_active:
         return None
+    
+    return user
+
+
+async def reset_user_password(db: AsyncSession, token: str, new_password: str) -> Optional[User]:
+    """
+    Reset a user's password using a valid reset token.
+    
+    Args:
+        db: Database session.
+        token: Password reset token.
+        new_password: New password to set.
+        
+    Returns:
+        Updated User if token is valid, None otherwise.
+    """
+    email = verify_password_reset_token(token)
+    if not email:
+        return None
+        
+    user = await get_user_by_email(db, email)
+    if not user:
+        return None
+        
+    user.hashed_password = get_password_hash(new_password)
+    db.add(user)
+    await db.flush()
+    await db.refresh(user)
     
     return user

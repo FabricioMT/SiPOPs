@@ -57,3 +57,14 @@ class TokenPayload(BaseModel):
     """Schema for JWT token payload."""
     sub: str
     exp: datetime
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Schema for requesting a password reset link."""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Schema for setting a new password via token."""
+    token: str
+    new_password: str = Field(..., min_length=6, max_length=100)

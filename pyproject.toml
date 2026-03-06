@@ -1,0 +1,8 @@
+[project]
+name = "medicore-backend"
+version = "0.1.0"
+description = "MediCore Backend API"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

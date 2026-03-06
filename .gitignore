@@ -28,6 +28,9 @@ ENV/
 env/
 .venv/
 
+# Node
+node-v24.14.0-win-x64/
+
 # IDE
 .vscode/
 .idea/
