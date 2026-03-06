@@ -123,3 +123,28 @@ medicore-backend/
 2. ~~Testes automatizados para a Tela de Cadastro (5 testes)~~
 3. ~~Testes automatizados para a Tela de Recuperação de Senha (4 testes)~~
 
+### ✅ Fase 4: Planos de Saúde (Convênios) e POPs (Concluída)
+1. **Backend:**
+    - Modelo `HealthPlan` (Nome, Logo, Ativo) vinculado ao `SOP`.
+    - Migração unificada e compatível com SQLite (`current_timestamp`).
+    - API: Listagem de convênios, detalhes e filtragem de POPs por convênio.
+    - Script de Seed: 8 convênios cadastrados com protocolos específicos.
+2. **Frontend:**
+    - Tela de Listagem de Convênios (Grid de Cards com logos).
+    - Tela de Detalhes do Convênio (Lista de POPs relacionados).
+    - Navegação via Sidebar integrada.
+3. **Verificação:**
+    - Testes de backend para rotas de `health-plans` (4 testes passando).
+
+### 🚀 Próximas Fases (Propostas)
+
+#### 🔄 Fase 5: Onboarding & Trilhas (A Iniciar)
+1. **Backend:** Criação do modelo `Playlist` e `PlaylistSOP`.
+2. **Lógica:** Implementar sequência lógica de leitura de POPs.
+3. **Frontend:** Dashboard de progresso para o colaborador.
+
+#### 💬 Fase 6: Chat & Suporte (Real-time)
+1. **Backend:** WebSocket manager e modelo de mensagens.
+2. **Frontend:** Interface de chat flutuante ou página dedicada.
+
+

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.modules.auth.models import User
-from app.modules.knowledge_base.models import SOP, SOPVersion, SOPReading, SOPStatus
+from app.modules.knowledge_base.models import HealthPlan, SOP, SOPVersion, SOPReading, SOPStatus
 from app.modules.knowledge_base.schemas import SOPCreate, SOPUpdate
 
 
@@ -26,6 +26,7 @@ async def create_sop(db: AsyncSession, sop_data: SOPCreate, user: User) -> SOP:
         title=sop_data.title,
         category=sop_data.category,
         status=sop_data.status,
+        health_plan_id=sop_data.health_plan_id,
         created_by_id=user.id,
     )
     db.add(sop)
@@ -231,3 +232,34 @@ async def archive_sop(db: AsyncSession, sop: SOP) -> SOP:
     sop.status = SOPStatus.ARCHIVED
     await db.flush()
     return sop
+
+
+# ============== Health Plan Services ==============
+
+async def get_health_plans(db: AsyncSession, only_active: bool = True) -> List[HealthPlan]:
+    """Get list of health plans."""
+    query = select(HealthPlan)
+    if only_active:
+        query = query.where(HealthPlan.is_active == True)
+    
+    query = query.order_by(HealthPlan.name.asc())
+    result = await db.execute(query)
+    return list(result.scalars().all())
+
+
+async def get_health_plan_by_id(db: AsyncSession, plan_id: int) -> Optional[HealthPlan]:
+    """Get health plan by ID."""
+    result = await db.execute(select(HealthPlan).where(HealthPlan.id == plan_id))
+    return result.scalar_one_or_none()
+
+
+async def get_health_plan_sops(db: AsyncSession, plan_id: int) -> List[SOP]:
+    """Get all SOPs for a specific health plan."""
+    result = await db.execute(
+        select(SOP)
+        .options(selectinload(SOP.versions))
+        .where(SOP.health_plan_id == plan_id)
+        .where(SOP.status == SOPStatus.PUBLISHED)
+        .order_by(SOP.title.asc())
+    )
+    return list(result.scalars().all())

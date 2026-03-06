@@ -6,6 +6,8 @@ import { Login } from './modules/auth/Login';
 import { Register } from './modules/auth/Register';
 import { ForgotPassword } from './modules/auth/ForgotPassword';
 import { ResetPassword } from './modules/auth/ResetPassword';
+import { HealthPlanList } from './modules/health_plans/HealthPlanList';
+import { HealthPlanDetail } from './modules/health_plans/HealthPlanDetail';
 import { useAuthStore } from './store/authStore';
 
 // Protected Route Wrapper
@@ -27,8 +29,8 @@ const Dashboard = () => (
 
 const KnowledgeBase = () => (
   <Container>
-    <Title order={2}>POPs - Base de Conhecimento</Title>
-    <Text mt="md">Aqui você encontrará todos os Procedimentos Operacionais Padrão.</Text>
+    <Title order={2}>POPs - Detalhes do Procedimento</Title>
+    <Text mt="md">Aqui você encontrará o conteúdo detalhado do Procedimento Operacional Padrão.</Text>
   </Container>
 );
 
@@ -63,7 +65,9 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<Dashboard />} />
-          <Route path="knowledge-base" element={<KnowledgeBase />} />
+          <Route path="health-plans" element={<HealthPlanList />} />
+          <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+          <Route path="sops/:id" element={<KnowledgeBase />} />
           <Route path="onboarding" element={<Onboarding />} />
           <Route path="chat" element={<Chat />} />
         </Route>

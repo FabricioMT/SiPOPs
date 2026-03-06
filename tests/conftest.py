@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base, get_db
+from app.modules.auth.models import User
 from app.main import app
 
 
@@ -64,3 +65,40 @@ async def async_client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
+
+
+@pytest.fixture
+async def db():
+    """Provide a database session for setup/assertions within tests."""
+    async with TestingSessionLocal() as session:
+        yield session
+
+
+@pytest.fixture
+async def admin_user(db: AsyncSession):
+    """Create a test admin user."""
+    from app.modules.auth.models import User, UserRole
+    from app.core.security import get_password_hash
+    
+    user = User(
+        email="admin@test.com",
+        hashed_password=get_password_hash("password123"),
+        full_name="Admin Test",
+        role=UserRole.ADMIN
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+@pytest.fixture
+async def admin_token_headers(async_client: AsyncClient, admin_user: User):
+    """Provide authentication headers for the admin user."""
+    response = await async_client.post(
+        "/auth/login",
+        data={"username": admin_user.email, "password": "password123"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"}
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

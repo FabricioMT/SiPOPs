@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.modules.auth.router import router as auth_router
 from app.modules.knowledge_base.router import router as kb_router
+from app.modules.knowledge_base.health_plan_router import router as hp_router
 from app.modules.onboarding.router import router as onboarding_router
 from app.modules.chat.router import router as chat_router
 # Import models to register them with Base for init_db
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
     # Register routers
     app.include_router(auth_router)
     app.include_router(kb_router)
+    app.include_router(hp_router)
     app.include_router(onboarding_router)
     app.include_router(chat_router)
     

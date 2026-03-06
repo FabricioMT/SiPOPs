@@ -10,7 +10,7 @@ export function Layout() {
 
   const links = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: BookOpen, label: 'POPs', path: '/knowledge-base' },
+    { icon: BookOpen, label: 'Planos de Saúde', path: '/health-plans' },
     { icon: ListTodo, label: 'Onboarding', path: '/onboarding' },
     { icon: MessageSquare, label: 'Chat', path: '/chat' },
   ];

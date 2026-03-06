@@ -11,6 +11,23 @@ if TYPE_CHECKING:
     from app.modules.auth.models import User
 
 
+class HealthPlan(Base):
+    """Model for Health Plans (Convênios) like Unimed, Ipsemg, etc."""
+    
+    __tablename__ = "health_plans"
+    
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+    logo_path: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+    
+    # Relationships
+    sops: Mapped[List["SOP"]] = relationship("SOP", back_populates="health_plan")
+    
+    def __repr__(self) -> str:
+        return f"<HealthPlan(id={self.id}, name={self.name})>"
+
+
 class SOPStatus(str, enum.Enum):
     """Status of a Standard Operating Procedure."""
     DRAFT = "draft"
@@ -32,6 +49,12 @@ class SOP(Base):
         nullable=False
     )
     
+    # Optional link to a specific Health Plan
+    health_plan_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("health_plans.id", ondelete="SET NULL"), 
+        nullable=True
+    )
+    
     # Author
     created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_by: Mapped["User"] = relationship("User", foreign_keys=[created_by_id])
@@ -39,17 +62,18 @@ class SOP(Base):
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
-        server_default=func.now(), 
+        server_default=func.current_timestamp(), 
         nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(),
+        server_default=func.current_timestamp(), 
+        onupdate=func.current_timestamp(),
         nullable=False
     )
     
     # Relationships
+    health_plan: Mapped[Optional["HealthPlan"]] = relationship("HealthPlan", back_populates="sops")
     versions: Mapped[List["SOPVersion"]] = relationship(
         "SOPVersion", 
         back_populates="sop",
@@ -82,7 +106,7 @@ class SOPVersion(Base):
     
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
-        server_default=func.now(), 
+        server_default=func.current_timestamp(), 
         nullable=False
     )
     
@@ -109,7 +133,7 @@ class SOPReading(Base):
     # Timestamp of acknowledgment
     acknowledged_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
-        server_default=func.now(), 
+        server_default=func.current_timestamp(), 
         nullable=False
     )
     

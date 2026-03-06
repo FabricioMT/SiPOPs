@@ -10,6 +10,9 @@ from alembic import context
 from app.core.config import settings
 from app.core.database import Base
 from app.modules.auth.models import User  # noqa: F401
+from app.modules.knowledge_base.models import HealthPlan, SOP, SOPVersion, SOPReading  # noqa: F401
+from app.modules.onboarding.models import Playlist, PlaylistSOP  # noqa: F401
+from app.modules.chat.models import ChatMessage  # noqa: F401
 
 # this is the Alembic Config object
 config = context.config

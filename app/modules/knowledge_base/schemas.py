@@ -6,12 +6,35 @@ from pydantic import BaseModel, Field
 from app.modules.knowledge_base.models import SOPStatus
 
 
+# ============== Health Plan Schemas ==============
+
+class HealthPlanBase(BaseModel):
+    """Base Health Plan schema."""
+    name: str = Field(..., min_length=2, max_length=100)
+    logo_path: Optional[str] = Field(None, max_length=255)
+    is_active: bool = True
+
+
+class HealthPlanCreate(HealthPlanBase):
+    """Schema for creating a new Health Plan."""
+    pass
+
+
+class HealthPlanResponse(HealthPlanBase):
+    """Schema for Health Plan response."""
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+
 # ============== SOP Schemas ==============
 
 class SOPBase(BaseModel):
     """Base SOP schema."""
     title: str = Field(..., min_length=3, max_length=255)
     category: Optional[str] = Field(None, max_length=100)
+    health_plan_id: Optional[int] = Field(None, description="Optional ID of the health plan this SOP belongs to")
 
 
 class SOPCreate(SOPBase):
@@ -47,6 +70,7 @@ class SOPResponse(SOPBase):
     id: int
     status: SOPStatus
     created_by_id: int
+    health_plan_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
     current_version_number: Optional[int] = None
