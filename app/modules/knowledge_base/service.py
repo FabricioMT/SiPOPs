@@ -158,13 +158,14 @@ async def acknowledge_sop(db: AsyncSession, sop: SOP, user: User) -> SOPReading:
         raise ValueError("SOP has no versions")
     
     # Check if already acknowledged this version
-    existing = await db.execute(
+    existing_result = await db.execute(
         select(SOPReading)
         .where(SOPReading.sop_version_id == current_version.id)
         .where(SOPReading.user_id == user.id)
     )
-    if existing.scalar_one_or_none():
-        raise ValueError("Already acknowledged this version")
+    existing_reading = existing_result.scalar_one_or_none()
+    if existing_reading:
+        return existing_reading
     
     reading = SOPReading(
         sop_version_id=current_version.id,
@@ -185,6 +186,32 @@ async def get_user_readings(db: AsyncSession, user_id: int) -> List[SOPReading]:
         .order_by(SOPReading.acknowledged_at.desc())
     )
     return list(result.scalars().all())
+
+
+async def get_user_reading_status(db: AsyncSession, sop: SOP, user: User) -> dict:
+    current_version = sop.current_version
+    if not current_version:
+        return {
+            "sop_id": sop.id,
+            "sop_title": sop.title,
+            "has_read_current_version": False,
+            "current_version": 0
+        }
+        
+    existing = await db.execute(
+        select(SOPReading)
+        .where(SOPReading.sop_version_id == current_version.id)
+        .where(SOPReading.user_id == user.id)
+    )
+    reading = existing.scalar_one_or_none()
+    
+    return {
+        "sop_id": sop.id,
+        "sop_title": sop.title,
+        "has_read_current_version": reading is not None,
+        "last_read_at": reading.acknowledged_at if reading else None,
+        "current_version": current_version.version_number
+    }
 
 
 async def search_sops(

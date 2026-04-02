@@ -30,17 +30,27 @@ export const SOPDetail = () => {
     },
   });
 
+  const { data: readingStatus, isLoading: isLoadingStatus } = useQuery({
+    queryKey: ['sop-reading-status', id],
+    queryFn: async () => {
+      const response = await apiClient.get(`/sops/${id}/reading-status`);
+      return response.data;
+    },
+  });
+
   const acknowledgeMutation = useMutation({
     mutationFn: async () => {
       await apiClient.post(`/sops/${id}/acknowledge`);
     },
     onSuccess: () => {
-      // Re-fetch to update status or just show success
-      queryClient.invalidateQueries({ queryKey: ['sop', id] });
+      queryClient.invalidateQueries({ queryKey: ['sop-reading-status', id] });
+      queryClient.invalidateQueries({ queryKey: ['playlist-progress'] });
     },
   });
 
-  if (isLoading) return <Center h="100vh"><Loader /></Center>;
+  const isRead = readingStatus?.has_read_current_version || acknowledgeMutation.isSuccess;
+
+  if (isLoading || isLoadingStatus) return <Center h="100vh"><Loader /></Center>;
   
   if (error || !sop) {
     return (
@@ -117,12 +127,14 @@ export const SOPDetail = () => {
               </Text>
             </Stack>
             <Button 
-              color="blue" 
+              color={isRead ? "green" : "green"}
+              variant={isRead ? "light" : "filled"}
               leftSection={<CheckCircle size={18} />}
               onClick={() => acknowledgeMutation.mutate()}
               loading={acknowledgeMutation.isPending}
+              disabled={isRead}
             >
-              Li e Estou Ciente
+              {isRead ? "Procedimento Lido ✅" : "Li e Estou Ciente"}
             </Button>
           </Group>
         </Paper>

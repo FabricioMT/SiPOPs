@@ -13,7 +13,7 @@ from app.modules.knowledge_base.schemas import (
     SOPVersionResponse, SOPReadingResponse
 )
 from app.modules.knowledge_base import service
-
+from app.modules.knowledge_base.schemas import UserReadingStatus
 
 router = APIRouter(prefix="/sops", tags=["knowledge-base"])
 
@@ -222,3 +222,21 @@ async def acknowledge_sop(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+
+
+@router.get("/{sop_id}/reading-status", response_model=UserReadingStatus)
+async def get_reading_status(
+    sop_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Check if the current user has read the current version.
+    """
+    sop = await service.get_sop_by_id(db, sop_id)
+    if not sop:
+        raise HTTPException(status_code=404, detail="SOP not found")
+        
+    status_data = await service.get_user_reading_status(db, sop, current_user)
+    return status_data

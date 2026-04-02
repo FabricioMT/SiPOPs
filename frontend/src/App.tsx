@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Layout } from './components/Layout';
-import { Title, Text, Container } from '@mantine/core';
+import { Title, Text, Container, Center, Loader } from '@mantine/core';
 
 import { Login } from './modules/auth/Login';
 import { Register } from './modules/auth/Register';
@@ -9,11 +10,23 @@ import { ResetPassword } from './modules/auth/ResetPassword';
 import { HealthPlanList } from './modules/health_plans/HealthPlanList';
 import { HealthPlanDetail } from './modules/health_plans/HealthPlanDetail';
 import { SOPDetail } from './modules/knowledge_base/SOPDetail';
+import { OnboardingList } from './modules/onboarding/OnboardingList';
+import { OnboardingDetail } from './modules/onboarding/OnboardingDetail';
+import { TUSSList } from './modules/tuss/TUSSList';
 import { useAuthStore } from './store/authStore';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = useAuthStore((state) => state.token);
+  const { token, isLoadingAuth } = useAuthStore();
+
+  if (isLoadingAuth) {
+    return (
+      <Center h="100vh">
+        <Loader size="xl" type="bars" color="mediBlue" />
+      </Center>
+    );
+  }
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -24,14 +37,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const Dashboard = () => (
   <Container>
     <Title order={2}>Dashboard</Title>
-    <Text mt="md">Bem-vindo ao MediCore. Selecione uma opção no menu lateral.</Text>
-  </Container>
-);
-
-const Onboarding = () => (
-  <Container>
-    <Title order={2}>Onboarding & Trilhas</Title>
-    <Text mt="md">Gerencie e visualize seu progresso de treinamento.</Text>
+    <Text mt="md">Bem-vindo ao <strong>SiPOPs</strong> — Sistema de Instrução aos Procedimentos Operacionais Padrão. Selecione uma opção no menu lateral para começar.</Text>
   </Container>
 );
 
@@ -43,6 +49,12 @@ const Chat = () => (
 );
 
 function App() {
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -62,7 +74,9 @@ function App() {
           <Route path="health-plans" element={<HealthPlanList />} />
           <Route path="health-plans/:id" element={<HealthPlanDetail />} />
           <Route path="sops/:id" element={<SOPDetail />} />
-          <Route path="onboarding" element={<Onboarding />} />
+          <Route path="onboarding" element={<OnboardingList />} />
+          <Route path="onboarding/:id" element={<OnboardingDetail />} />
+          <Route path="tuss" element={<TUSSList />} />
           <Route path="chat" element={<Chat />} />
         </Route>
       </Routes>
@@ -71,3 +85,4 @@ function App() {
 }
 
 export default App;
+

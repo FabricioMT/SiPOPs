@@ -10,11 +10,13 @@ from app.modules.knowledge_base.router import router as kb_router
 from app.modules.knowledge_base.health_plan_router import router as hp_router
 from app.modules.onboarding.router import router as onboarding_router
 from app.modules.chat.router import router as chat_router
+from app.modules.tuss.router import router as tuss_router
 # Import models to register them with Base for init_db
 from app.modules.auth.models import User  # noqa: F401
 from app.modules.knowledge_base.models import SOP, SOPVersion, SOPReading  # noqa: F401
 from app.modules.onboarding.models import Playlist, PlaylistSOP  # noqa: F401
 from app.modules.chat.models import ChatMessage  # noqa: F401
+from app.modules.tuss.models import TUSSCode  # noqa: F401
 
 
 @asynccontextmanager
@@ -53,6 +55,7 @@ def create_app() -> FastAPI:
     app.include_router(hp_router)
     app.include_router(onboarding_router)
     app.include_router(chat_router)
+    app.include_router(tuss_router)
     
     @app.get("/health", tags=["health"])
     async def health_check():

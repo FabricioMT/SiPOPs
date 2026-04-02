@@ -51,3 +51,16 @@ htmlcov/
 
 # Logs
 *.log
+
+# Database
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+.npm/
+
+# OS
+.DS_Store
+Thumbs.db
