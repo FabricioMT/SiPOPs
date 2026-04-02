@@ -1,14 +1,19 @@
-import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete } from '@mantine/core';
+import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete, Menu, Avatar, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { LayoutDashboard, BookOpen, ListTodo, MessageSquare, LogOut, User as UserIcon, Sun, Moon, Search, Hash } from 'lucide-react';
+import { 
+  LayoutDashboard, BookOpen, ListTodo, MessageSquare, LogOut, 
+  User as UserIcon, Sun, Moon, Search, Hash, Shield, Settings, ChevronDown 
+} from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { TokenTimer } from './TokenTimer';
 import apiClient from '../api/client';
+import { ProfileModal } from '../modules/auth/ProfileModal';
 
 export function Layout() {
   const [opened, { toggle }] = useDisclosure();
+  const [profileOpened, { open: openProfile, close: closeProfile }] = useDisclosure(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
@@ -44,6 +49,10 @@ export function Layout() {
     { icon: Hash, label: 'Códigos TUSS', path: '/tuss' },
     { icon: MessageSquare, label: 'Chat', path: '/chat' },
   ];
+
+  if (user?.role === 'admin') {
+    links.push({ icon: Shield, label: 'Gestão de Equipe', path: '/users' });
+  }
 
   const handleLogout = () => {
     logout();
@@ -91,12 +100,55 @@ export function Layout() {
               <Group visibleFrom="md">
                 <TokenTimer />
               </Group>
+              
               <Group gap="xs">
-                <ActionIcon variant="default" onClick={() => toggleColorScheme()} size="lg" aria-label="Alterar Tema">
-                  {colorScheme === 'dark' ? <Sun size="1.2rem" /> : <Moon size="1.2rem" />}
-                </ActionIcon>
-                <UserIcon size="1.2rem" />
-                <Text size="sm" fw={500} visibleFrom="sm">{user.full_name}</Text>
+                <Tooltip label="Alternar Tema">
+                  <ActionIcon variant="default" onClick={() => toggleColorScheme()} size="lg" radius="md">
+                    {colorScheme === 'dark' ? <Sun size="1.2rem" /> : <Moon size="1.2rem" />}
+                  </ActionIcon>
+                </Tooltip>
+
+                <Menu shadow="md" width={220} position="bottom-end" transitionProps={{ transition: 'pop-top-right' }}>
+                  <Menu.Target>
+                    <Group gap={8} style={{ cursor: 'pointer' }} className="user-menu-trigger">
+                      <Avatar color="mediBlue" radius="xl" size="sm">
+                        {user.full_name.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Stack gap={0} visibleFrom="sm">
+                        <Text size="sm" fw={700} style={{ lineHeight: 1 }}>{user.full_name}</Text>
+                        <Text size="xs" c="dimmed">{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</Text>
+                      </Stack>
+                      <ChevronDown size={14} color="gray" />
+                    </Group>
+                  </Menu.Target>
+
+                  <Menu.Dropdown>
+                    <Menu.Label>Sua Conta</Menu.Label>
+                    <Menu.Item 
+                      leftSection={<UserIcon size={14} />} 
+                      onClick={openProfile}
+                    >
+                      Meu Perfil
+                    </Menu.Item>
+                    <Menu.Item 
+                      leftSection={<Settings size={14} />}
+                      onClick={openProfile}
+                    >
+                      Configurações
+                    </Menu.Item>
+
+                    <Menu.Divider />
+
+                    <Menu.Label>Sessão</Menu.Label>
+                    <Menu.Item 
+                      color="red" 
+                      leftSection={<LogOut size={14} />}
+                      onClick={handleLogout}
+                    >
+                      Sair do SiPOPs
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
               </Group>
             </Group>
           )}
@@ -124,7 +176,9 @@ export function Layout() {
           {user && (
             <Group hiddenFrom="sm" justify="space-between" mb="xs">
               <Group gap="xs">
-                <UserIcon size="1.2rem" />
+                <Avatar color="mediBlue" radius="xl" size="sm">
+                  {user.full_name.charAt(0).toUpperCase()}
+                </Avatar>
                 <Text size="sm" fw={500}>{user.full_name}</Text>
               </Group>
               <TokenTimer />
@@ -142,6 +196,8 @@ export function Layout() {
       <AppShell.Main>
         <Outlet />
       </AppShell.Main>
+
+      <ProfileModal opened={profileOpened} onClose={closeProfile} />
     </AppShell>
   );
 }

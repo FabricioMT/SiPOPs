@@ -93,6 +93,93 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Opti
     return user
 
 
+from typing import Optional, List
+from app.modules.auth.models import User, UserRole
+
+async def get_users(
+    db: AsyncSession, 
+    role: Optional[UserRole] = None,
+    limit: int = 50,
+    offset: int = 0
+) -> List[User]:
+    """
+    Get all users with optional role filtering and pagination.
+    """
+    stmt = select(User)
+    if role:
+        stmt = stmt.where(User.role == role)
+    
+    stmt = stmt.offset(offset).limit(limit)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+from app.modules.auth.schemas import UserUpdate, UserProfileUpdate, UserPasswordUpdate
+
+async def update_user(db: AsyncSession, user_id: int, update_data: UserUpdate) -> Optional[User]:
+    """Update user information (Admin version)."""
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        return None
+    
+    if update_data.email and update_data.email != user.email:
+        # Check if new email is already taken
+        existing = await get_user_by_email(db, update_data.email)
+        if existing:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Email already registered")
+        user.email = update_data.email
+        
+    if update_data.full_name is not None:
+        user.full_name = update_data.full_name
+    if update_data.role is not None:
+        user.role = update_data.role
+    if update_data.is_active is not None:
+        user.is_active = update_data.is_active
+        
+    await db.flush()
+    await db.refresh(user)
+    return user
+
+
+async def update_user_profile(db: AsyncSession, user: User, update_data: UserProfileUpdate) -> User:
+    """Update own profile information."""
+    if update_data.email and update_data.email != user.email:
+        existing = await get_user_by_email(db, update_data.email)
+        if existing:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Email already registered")
+        user.email = update_data.email
+        
+    if update_data.full_name is not None:
+        user.full_name = update_data.full_name
+        
+    await db.flush()
+    await db.refresh(user)
+    return user
+
+
+async def update_user_password(db: AsyncSession, user: User, password_data: UserPasswordUpdate) -> bool:
+    """Update own password after verifying current one."""
+    if not verify_password(password_data.current_password, user.hashed_password):
+        return False
+        
+    user.hashed_password = get_password_hash(password_data.new_password)
+    await db.flush()
+    return True
+
+
+async def delete_user(db: AsyncSession, user_id: int) -> bool:
+    """Delete a user account."""
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        return False
+        
+    await db.delete(user)
+    await db.flush()
+    return True
+
+
 async def reset_user_password(db: AsyncSession, token: str, new_password: str) -> Optional[User]:
     """
     Reset a user's password using a valid reset token.

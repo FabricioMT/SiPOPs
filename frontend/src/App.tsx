@@ -13,6 +13,7 @@ import { SOPDetail } from './modules/knowledge_base/SOPDetail';
 import { OnboardingList } from './modules/onboarding/OnboardingList';
 import { OnboardingDetail } from './modules/onboarding/OnboardingDetail';
 import { TUSSList } from './modules/tuss/TUSSList';
+import { UsersList } from './modules/admin/UsersList';
 import { useAuthStore } from './store/authStore';
 
 // Protected Route Wrapper
@@ -77,6 +78,7 @@ function App() {
           <Route path="onboarding" element={<OnboardingList />} />
           <Route path="onboarding/:id" element={<OnboardingDetail />} />
           <Route path="tuss" element={<TUSSList />} />
+          <Route path="users" element={<UsersList />} />
           <Route path="chat" element={<Chat />} />
         </Route>
       </Routes>

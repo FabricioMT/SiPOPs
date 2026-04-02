@@ -134,3 +134,26 @@ async def get_playlist_progress(
         read_count=progress["read_count"],
         total_count=progress["total_count"]
     )
+
+
+from app.core.dependencies import get_admin_user
+
+@router.get("/users/{user_id}/progress", response_model=List[ProgressResponse])
+async def get_user_all_progress(
+    user_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get progress for all playlists for a specific user (Admin only).
+    """
+    progress_data = await service.get_all_playlists_progress(db, user_id)
+    return [
+        ProgressResponse(
+            playlist_id=p["playlist_id"],
+            playlist_title=p["title"],
+            percentage=p["percentage"],
+            read_count=p["read_count"],
+            total_count=p["total_count"]
+        ) for p in progress_data
+    ]

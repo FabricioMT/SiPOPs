@@ -19,3 +19,28 @@ async def list_tuss_codes(
     List TUSS codes with search functionality.
     """
     return await service.get_tuss_codes(db, q=q, limit=limit, offset=offset)
+
+
+@router.post("/{tuss_id}/track", status_code=204)
+async def track_tuss_usage(
+    tuss_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Track that a user copied a TUSS code.
+    """
+    await service.track_tuss_usage(db, current_user.id, tuss_id)
+    await db.commit()
+    return None
+
+
+@router.get("/recurrent", response_model=List[schemas.TUSSCodeRead])
+async def list_recurrent_tuss(
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    List TUSS codes used 3 or more times by the current user.
+    """
+    return await service.get_recurrent_tuss(db, current_user.id)

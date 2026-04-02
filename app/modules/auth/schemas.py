@@ -23,6 +23,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Schema for updating user data."""
     full_name: Optional[str] = Field(None, min_length=2, max_length=255)
+    email: Optional[EmailStr] = None
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
 
@@ -67,4 +68,16 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     """Schema for setting a new password via token."""
     token: str
+    new_password: str = Field(..., min_length=6, max_length=100)
+
+
+class UserProfileUpdate(BaseModel):
+    """Schema for updating own profile."""
+    full_name: Optional[str] = Field(None, min_length=2, max_length=255)
+    email: Optional[EmailStr] = None
+
+
+class UserPasswordUpdate(BaseModel):
+    """Schema for updating own password."""
+    current_password: str
     new_password: str = Field(..., min_length=6, max_length=100)

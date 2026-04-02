@@ -48,5 +48,35 @@ export const onboardingApi = {
   getPlaylistProgress: async (id: number | string) => {
     const response = await apiClient.get<ProgressResponse>(`/playlists/${id}/progress`);
     return response.data;
+  },
+
+  getUsers: async (limit = 50, offset = 0) => {
+    const response = await apiClient.get<UserResponse[]>('/auth/users', {
+      params: { limit, offset }
+    });
+    return response.data;
+  },
+
+  getUserAllProgress: async (userId: number) => {
+    const response = await apiClient.get<ProgressResponse[]>(`/playlists/users/${userId}/progress`);
+    return response.data;
+  },
+
+  updateUser: async (userId: number, data: Partial<UserResponse>) => {
+    const response = await apiClient.patch<UserResponse>(`/auth/users/${userId}`, data);
+    return response.data;
+  },
+
+  deleteUser: async (userId: number) => {
+    await apiClient.delete(`/auth/users/${userId}`);
   }
 };
+
+export interface UserResponse {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}

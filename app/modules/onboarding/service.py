@@ -147,3 +147,17 @@ async def calculate_progress(
         "total_count": total_count,
         "title": playlist.title
     }
+
+
+async def get_all_playlists_progress(db: AsyncSession, user_id: int) -> List[dict]:
+    """Calculate progress for all playlists for a specific user."""
+    result = await db.execute(select(Playlist))
+    playlists = result.scalars().all()
+    
+    progress_list = []
+    for playlist in playlists:
+        progress = await calculate_progress(db, user_id, playlist.id)
+        progress["playlist_id"] = playlist.id
+        progress_list.append(progress)
+        
+    return progress_list

@@ -26,6 +26,7 @@ export function Login() {
     initialValues: {
       email: '',
       password: '',
+      rememberMe: false,
     },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'E-mail inválido'),
@@ -54,7 +55,7 @@ export function Login() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setAuth(userResponse.data, token);
+      setAuth(userResponse.data, token, values.rememberMe);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ocorreu um erro ao fazer login.');
@@ -66,7 +67,7 @@ export function Login() {
   return (
     <Container size={420} my={40}>
       <Title ta="center" order={1} c="mediBlue">
-        MediCore
+        SiPOPs
       </Title>
       <Text c="dimmed" size="sm" ta="center" mt={5}>
         Não possui uma conta?{' '}
@@ -91,7 +92,10 @@ export function Login() {
             {...form.getInputProps('password')}
           />
           <Group justify="space-between" mt="lg">
-            <Checkbox label="Lembrar-me" />
+            <Checkbox 
+              label="Lembrar-me" 
+              {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+            />
             <Anchor component="button" size="sm" onClick={() => navigate('/forgot-password')}>
               Esqueceu sua senha?
             </Anchor>
@@ -103,7 +107,7 @@ export function Login() {
             </Text>
           )}
 
-          <Button fullWidth mt="xl" type="submit" loading={loading}>
+          <Button fullWidth mt="xl" type="submit" loading={loading} color="mediBlue">
             Entrar
           </Button>
         </form>

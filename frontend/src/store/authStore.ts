@@ -12,7 +12,8 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isLoadingAuth: boolean;
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User, token: string, remember?: boolean) => void;
+  setUser: (user: User) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
   getTokenExpiration: () => number | null;
@@ -20,14 +21,22 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  token: localStorage.getItem('token'),
-  isLoadingAuth: true, // Começa carregando
-  setAuth: (user, token) => {
-    localStorage.setItem('token', token);
+  token: localStorage.getItem('token') || sessionStorage.getItem('token'),
+  isLoadingAuth: true,
+  setAuth: (user, token, remember = false) => {
+    if (remember) {
+      localStorage.setItem('token', token);
+      sessionStorage.removeItem('token');
+    } else {
+      sessionStorage.setItem('token', token);
+      localStorage.removeItem('token');
+    }
     set({ user, token, isLoadingAuth: false });
   },
+  setUser: (user) => set({ user }),
   logout: () => {
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     set({ user: null, token: null, isLoadingAuth: false });
   },
   checkAuth: async () => {

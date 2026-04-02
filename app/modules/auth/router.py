@@ -1,3 +1,4 @@
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +7,8 @@ from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
 from app.modules.auth.models import User
 from app.modules.auth.schemas import (
-    UserCreate, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest
+    UserCreate, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest, UserUpdate,
+    UserProfileUpdate, UserPasswordUpdate
 )
 from app.modules.auth import service
 from app.modules.auth.utils import create_password_reset_token, send_reset_password_email
@@ -78,6 +80,36 @@ async def get_current_user_info(
     return current_user
 
 
+@router.patch("/me", response_model=UserResponse)
+async def update_my_profile(
+    update_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update own profile information.
+    """
+    updated_user = await service.update_user_profile(db, current_user, update_data)
+    await db.commit()
+    return updated_user
+
+
+@router.patch("/me/password", status_code=status.HTTP_204_NO_CONTENT)
+async def update_my_password(
+    password_data: UserPasswordUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update own password.
+    """
+    success = await service.update_user_password(db, current_user, password_data)
+    if not success:
+        raise HTTPException(status_code=400, detail="Senha atual incorreta")
+    await db.commit()
+    return None
+
+
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
 async def forgot_password(
     request: ForgotPasswordRequest,
@@ -114,3 +146,52 @@ async def reset_password(
         )
     
     return {"msg": "Password updated successfully."}
+
+
+from app.core.dependencies import get_admin_user
+from app.modules.auth.models import UserRole
+
+@router.get("/users", response_model=List[UserResponse])
+async def list_users(
+    role: Optional[UserRole] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    List all users (Admin only).
+    """
+    return await service.get_users(db, role=role, limit=limit, offset=offset)
+
+
+@router.patch("/users/{user_id}", response_model=UserResponse)
+async def update_user(
+    user_id: int,
+    update_data: UserUpdate,
+    admin_user: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update a user (Admin only).
+    """
+    updated_user = await service.update_user(db, user_id, update_data)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: int,
+    admin_user: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete a user (Admin only).
+    """
+    success = await service.delete_user(db, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    await db.commit()
+    return None
