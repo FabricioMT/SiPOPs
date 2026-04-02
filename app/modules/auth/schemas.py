@@ -40,6 +40,16 @@ class UserResponse(UserBase):
         from_attributes = True
 
 
+class UserAdminCreate(UserBase):
+    """Schema for admin to create a user (no password sent)."""
+    role: UserRole = UserRole.COLABORADOR
+
+
+class UserAdminResponse(UserResponse):
+    """Response containing the generated password for the admin."""
+    plain_password: str
+
+
 # ============== Auth Schemas ==============
 
 class UserLogin(BaseModel):

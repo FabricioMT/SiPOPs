@@ -3,7 +3,23 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from app.modules.knowledge_base.models import SOPStatus
+from app.modules.knowledge_base.models import SOPStatus, PatientType
+
+
+# ============== Attendance Protocol Schemas ==============
+
+class AttendanceProtocolResponse(BaseModel):
+    """Schema for Attendance Protocol response."""
+    id: int
+    health_plan_id: int
+    patient_type: PatientType
+    title: str
+    content: Optional[str] = None
+    images_json: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 
 
 # ============== Health Plan Schemas ==============

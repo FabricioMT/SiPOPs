@@ -3,10 +3,37 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import secrets
+import string
 from app.core.security import get_password_hash, verify_password
 from app.modules.auth.models import User
-from app.modules.auth.schemas import UserCreate
+from app.modules.auth.schemas import UserCreate, UserAdminCreate
 from app.modules.auth.utils import verify_password_reset_token
+
+
+async def create_user_admin(db: AsyncSession, user_data: UserAdminCreate) -> tuple[User, str]:
+    """
+    Create a new user by an admin with a generated password.
+    """
+    # Generate random password (8 chars)
+    alphabet = string.ascii_letters + string.digits
+    plain_password = ''.join(secrets.choice(alphabet) for _ in range(8))
+    
+    hashed_password = get_password_hash(plain_password)
+    
+    user = User(
+        email=user_data.email,
+        hashed_password=hashed_password,
+        full_name=user_data.full_name,
+        role=user_data.role,
+        is_active=True,
+    )
+    
+    db.add(user)
+    await db.flush()
+    await db.refresh(user)
+    
+    return user, plain_password
 
 
 

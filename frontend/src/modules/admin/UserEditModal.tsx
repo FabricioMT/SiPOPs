@@ -81,9 +81,15 @@ export const UserEditModal = ({ opened, onClose, user }: UserEditModalProps) => 
               label="Cargo / Role"
               placeholder="Selecione o cargo"
               data={[
-                { value: 'admin', label: 'Admin' },
-                { value: 'gestor', label: 'Gestor' },
-                { value: 'colaborador', label: 'Colaborador' },
+                { value: 'admin', label: '🛡️ Admin' },
+                { value: 'gestor', label: '👔 Gestor' },
+                { value: 'colaborador', label: '👤 Colaborador' },
+                { group: 'Secretarias', items: [
+                  { value: 'sec_ue_sus', label: '🚨 Sec. Urgência e Emergência SUS' },
+                  { value: 'sec_pa', label: '🏥 Sec. Pronto Atendimento' },
+                  { value: 'sec_portaria', label: '🚪 Sec. Portaria Principal' },
+                  { value: 'sec_guias', label: '📋 Sec. Central de Guias' },
+                ]},
               ]}
               {...form.getInputProps('role')}
             />

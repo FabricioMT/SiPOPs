@@ -1,4 +1,4 @@
-# Project Name: MediCore - Central de Conhecimento e Operações Hospitalares
+# Project Name: SiPOPs - Sistema de Instrução aos Procedimentos Operacionais Padrão
 
 
 ## 0. Instruções Gerais
@@ -16,7 +16,7 @@ O sistema foca em alta confiabilidade, auditoria de leitura e suporte via Chat, 
 ## 2. Stack Tecnológica
 
 ### Backend (API REST)
-*   **Linguagem:** Python 3.11+
+*   **Linguagem:** Python 3.12+
 *   **Framework:** FastAPI (Async)
 *   **ORM:** SQLAlchemy 2.0 (Async)
 *   **Validação:** Pydantic v2
@@ -24,18 +24,19 @@ O sistema foca em alta confiabilidade, auditoria de leitura e suporte via Chat, 
 *   **Task Queue (Futuro):** Celery + Redis (para processamento de embeddings IA)
 
 ### Banco de Dados
-*   **SGBD:** PostgreSQL 15+
+*   **SGBD:** PostgreSQL 15+ (Em desenvolvimento com SQLite para agilidade)
 *   **Extensões:**
     *   `pgvector` (Preparação para IA/Busca Semântica)
     *   `pg_trgm` (Busca textual eficiente)
 *   **Migrations:** Alembic
 
 ### Frontend (SPA)
-*   **Framework:** React 18+ com TypeScript
+*   **Framework:** React 19+ com TypeScript
 *   **Build Tool:** Vite
 *   **State Management:** TanStack Query (React Query) + Zustand
-*   **UI Library:** Mantine UI ou Material UI (Foco em interfaces administrativas limpas)
-*   **Editor de Texto:** Tiptap ou Quill (Rich Text com suporte a output JSON/Markdown)
+*   **UI Library:** Mantine UI 8.x
+*   **Editor de Texto:** Tiptap
+*   **Notificações:** Mantine Notifications (Premium UI Feedback)
 
 ### Infraestrutura
 *   **Containerização:** Docker & Docker Compose
@@ -44,112 +45,109 @@ O sistema foca em alta confiabilidade, auditoria de leitura e suporte via Chat, 
 
 ## 3. Requisitos Funcionais
 
-### Módulo 1: Gestão de Conhecimento (POPs)
-*   **Criação Centralizada (RBAC):** Apenas usuários com perfil `Gestor/Admin` podem criar, editar e arquivar Procedimentos Operacionais Padrão (POPs).
-*   **Versionamento de Documentos:**
-    *   Todo `UPDATE` em um POP gera uma nova `Version`.
-    *   O histórico de versões deve ser acessível.
-    *   Capacidade de reverter para versões anteriores.
-*   **Leitura e Aceite (Compliance):**
-    *   Usuários `Colaboradores` têm acesso de leitura.
-    *   **Botão "Li e Estou Ciente":** Registra data, hora e versão do documento lido (Auditoria).
-*   **Busca:** Pesquisa Full-Text pelo título e conteúdo do procedimento.
+### Módulo 1: Gestão de Conhecimento (POPs) (Concluído)
+*   **SiPOPs Omni-search:** Busca global debounced no Header para acesso instantâneo a qualquer POP.
+*   **Temas:** Suporte nativo a Modo Claro/Escuro com persistência.
+*   **Criação Centralizada (RBAC):** Apenas usuários com perfil `Gestor/Admin` podem criar, editar e arquivar POPs.
+*   **Leitura e Aceite (Compliance):** Botão "Li e Estou Ciente" com auditoria por versão.
 
-### Módulo 2: Onboarding & Trilhas
-*   **Playlists de Treinamento:** Agrupamento de POPs em uma ordem lógica (ex: "Dia 1 - Admissão").
-*   **Barra de Progresso:** Visualização de quantos % do treinamento o funcionário completou.
+### Módulo 2: Onboarding & Trilhas (Concluído)
+*   **Playlists de Treinamento:** Agrupamento de POPs por setor ou função.
+*   **Barra de Progresso:** Feedback visual do onboarding por colaborador.
+*   **Auditoria Admin:** Gestores podem visualizar o progresso detalhado de cada subordinado.
 
-### Módulo 3: Chat & Suporte (Escalável para IA)
-*   **Fase 1 (Atual):** Chat via WebSockets entre Colaborador e Gestor (Ticket/Dúvida em tempo real).
-*   **Fase 2 (Futuro):** Bot de IA que intercepta a pergunta, busca nos embeddings dos POPs e sugere a resposta antes de acionar o humano.
+### Módulo 3: Tabela TUSS & Produtividade (Concluído)
+*   **Consulta TUSS:** Base de dados com milhares de códigos de procedimentos.
+*   **Copy-to-click:** Cópia instantânea para o clipboard.
+*   **Códigos Recorrentes:** Identificação automática de códigos usados 3+ vezes por usuário.
+
+### Módulo 4: Gestão de Usuários e Segurança (Concluído)
+*   **Admin Dashboard:** Controle total de colaboradores (Edição, Alteração de Role, Status, Exclusão).
+*   **Meu Perfil:** Autogestão de e-mail e troca de senha segura (verificação de senha atual).
+*   **Roles Especializadas:** Novas roles setoriais (`SEC_UE_SUS`, `SEC_PA`, `SEC_PORTARIA`) para segmentação de acesso.
+
+### Módulo 5: Setores & Protocolos (Concluído)
+*   **Hub de Treinamento por Setor:** Páginas dedicadas (Urgência, P.A., Portaria) com guias técnicos do sistema SPDATA.
+*   **Segmentação de Atendimento:** Guias específicos para Pacientes Internos vs. Externos em cada setor.
+*   **Protocolos de Convênio:** Instruções de abertura de guias e recepção integradas ao detalhe de cada plano de saúde.
 
 ---
 
 ## 4. Arquitetura de Software
 
-Adotaremos uma **Arquitetura Modular (Modular Monolith)**. O código será organizado por *Domínios de Negócio* e não apenas por camadas técnicas.
+Adotaremos uma **Arquitetura Modular (Modular Monolith)**. O código será organizado por *Domínios de Negócio*.
 
-### Estrutura de Diretórios Sugerida
+### Estrutura de Diretórios Atualizada
 
 ```text
 medicore-backend/
 ├── app/
-│   ├── core/                   # Configs globais, Security, Middleware, Logs
-│   │   ├── config.py
-│   │   ├── security.py
-│   │   └── database.py         # Configuração do AsyncSession
-│   │
-│   ├── modules/                # Módulos de Negócio (Domínios)
-│   │   ├── auth/               # Login, Users, Permissions
-│   │   │   ├── router.py
-│   │   │   ├── schemas.py
-│   │   │   ├── service.py
-│   │   │   └── models.py
-│   │   │
-│   │   ├── knowledge_base/     # Gestão dos POPs e Leituras
-│   │   │   ├── router.py
-│   │   │   ├── schemas.py      # Pydantic Models (CreateSOP, ReadSOP)
-│   │   │   ├── service.py      # Regra de Negócio (Versioning logic)
-│   │   │   └── models.py       # SQLAlchemy Models (SOP, SOPVersion)
-│   │   │
-│   │   └── chat/               # WebSockets e Histórico
-│   │       ├── router.py       # WS Endpoints
-│   │       ├── manager.py      # Connection Manager (WebSockets)
-│   │       └── models.py
-│   │
-│   └── main.py                 # Entrypoint (App init)
-│
-├── alembic/                    # Migrações de Banco
-├── tests/                      # Testes (Pytest)
-├── requirements.txt
+│   ├── core/                   # Configs globais, Security, database
+│   ├── modules/
+│   │   ├── auth/               # Gestão de Usuários e Segurança
+│   │   ├── knowledge_base/     # POPs e Versões
+│   │   ├── tuss/               # Módulo de Códigos TUSS e Tracking
+│   │   ├── onboarding/         # Playlists e Progresso de Usuários
+│   │   └── chat/               # Comunicação em tempo real
+│   └── main.py
+├── frontend/                   # React + Mantine UI
 └── docker-compose.yml
+```
 
 ---
 
-## 5. Próximos Passos (Roadmap Atual)
+## 5. Roadmap e Conquistas
 
-### ✅ Fase 1: Telas de Autenticação no Frontend (Concluída)
-1. ~~Tela de Login~~
-2. ~~Tela de Cadastro~~
-3. ~~Tela de Recuperação de Senha (ForgotPassword + ResetPassword)~~
+### ✅ Fase 1 a 4: Infraestrutura e POPs (Concluído)
+*   Autenticação completa, Planos de Saúde e Gestão de POPs inicial.
 
-### ✅ Fase 2: Testes de Autenticação no Backend (Concluída)
-1. ~~Testes para a rota de Login~~
-2. ~~Testes para a rota de Cadastro~~
-3. ~~Testes para a rota de Recuperação de Senha~~
+### ✅ Fase 5: Preparação para Deploy (Concluído)
+*   Dockerização completa e Healthchecks.
 
-### ✅ Fase 3: Testes de Casos de Uso no Frontend (Concluída)
-1. ~~Testes automatizados para a Tela de Login (5 testes)~~
-2. ~~Testes automatizados para a Tela de Cadastro (5 testes)~~
-3. ~~Testes automatizados para a Tela de Recuperação de Senha (4 testes)~~
+### ✅ Fase 6: Onboarding & Auditoria (Concluído)
+*   Playlists de treinamento, barra de progresso e modal de auditoria para administradores.
 
-### ✅ Fase 4: Planos de Saúde (Convênios) e POPs (Concluída)
-1. **Backend:**
-    - Modelo `HealthPlan` (Nome, Logo, Ativo) vinculado ao `SOP`.
-    - Migração unificada e compatível com SQLite (`current_timestamp`).
-    - API: Listagem de convênios, detalhes e filtragem de POPs por convênio.
-    - Script de Seed: 8 convênios cadastrados com protocolos técnicos detalhados (assinaturas, códigos de exame, regras de autorização) e logos mapeados (`frontend/public/img`).
-2. **Frontend:**
-    - Tela de Listagem de Convênios (Grid de Cards com logos).
-    - Tela de Detalhes do Convênio (Lista de POPs relacionados).
-    - Navegação via Sidebar integrada.
-3. **Verificação:**
-    - Testes de backend para rotas de `health-plans` (4 testes passando).
+### ✅ Fase 7: Rebranding SiPOPs & Omni-search (Concluído)
+*   Transição total da marca para **SiPOPs**.
+*   Implementação de busca global debounced e Tema Dark com persistência.
 
-### 🚀 Próximas Fases (Propostas)
+### ✅ Fase 8: Gestão Admin & TUSS (Concluído)
+*   Painel administrativo para edição/exclusão de usuários.
+*   Módulo TUSS com click-to-copy e aba de códigos recorrentes automatizada.
 
-#### ✅ Fase 5: Infraestrutura e Preparação para Deploy (Concluída)
-1. **Dockerização:**
-    - Criado `Dockerfile` multi-stage para o Frontend (Vite + Nginx).
-    - Atualizado `Dockerfile` do Backend com `curl` e suporte a comandos de produção.
-    - `docker-compose.yml` agora inclui o frontend e healthchecks para os serviços.
-2. **Dependências:**
-    - `requirements.txt` atualizado com `gunicorn` e ferramentas de teste (`pytest`, `httpx`).
-3. **Monitoramento:**
-    - Implementado endpoint `/health` no backend para validação automática de status.
+### ✅ Fase 9: Autogestão e Segurança (Concluído)
+*   Dropdown de perfil no Header, troca de e-mail/senha segura e notificações premium.
 
-#### 🔄 Fase 6: Onboarding & Trilhas (A Iniciar)
-1. **Backend:** WebSocket manager e modelo de mensagens.
-2. **Frontend:** Interface de chat flutuante ou página dedicada.
+### ✅ Fase 10: Hub de Setores & Instruções SPDATA (Concluído)
+*   Implementação de roles por setor (`sec_ue_sus`, `sec_pa`, `sec_portaria`).
+*   Páginas Hub para cada secretaria com guias passo-a-passo para o sistema SPDATA.
+*   Modais de Protocolo de Atendimento integrados aos Planos de Saúde.
+*   Reseed completo do banco de dados para suporte às novas funcionalidades.
 
+### ✅ Fase 11: Gestão de Equipe & Criação (Concluído)
+*   Endpoint de criação de usuários exclusivo para Administradores.
+*   Geração automática de senha segura com funcionalidade "click-to-copy".
+*   Interface para listagem e criação rápida de novos colaboradores.
 
+### ✅ Fase 12: Reestruturação de Rotas & Navegação (Concluído)
+*   Navegação aninhada contextual (Setor > Tipo > Convênios).
+*   Breadcrumbs dinâmicos e botões "Voltar" que respeitam o histórico de navegação.
+*   Simplificação da sidebar (Renomeado para "Guias").
+
+### ✅ Fase 13: Segurança RBAC & Edição de Guias (Concluído)
+*   Implementação de `RoleProtectedRoute` no frontend para isolamento de setores.
+*   Filtragem automática de dados no backend baseada na role do usuário.
+*   Ferramenta de edição direta dos textos dos guias (Botão de Lápis) para Admin/Gestor.
+
+### ✅ Fase 14: Carga de Dados Massiva (TUSS XLS & Logos) (Concluído)
+*   Importação de +13.000 códigos TUSS via `Codigos TUSS.xls`.
+*   Mapeamento automático de 13 logomarcas de convênios na inicialização.
+*   Reseed total do banco (`seed_v4.py`) para ambiente operacional completo.
+
+---
+
+## 6. Próximas Fases (Propostas)
+
+### 🚀 Fase 15: Chat & Suporte com IA (A Iniciar)
+1. **Mensageria:** Chat via WebSockets entre Colaboradores e Gestores.
+2. **Integração IA:** RAG sobre a base de POPs para suporte automatizado.

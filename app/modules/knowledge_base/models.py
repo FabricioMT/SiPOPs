@@ -11,6 +11,11 @@ if TYPE_CHECKING:
     from app.modules.auth.models import User
 
 
+class PatientType(str, enum.Enum):
+    EXTERNO = "externo"
+    INTERNO = "interno"
+
+
 class HealthPlan(Base):
     """Model for Health Plans (Convênios) like Unimed, Ipsemg, etc."""
     
@@ -23,9 +28,33 @@ class HealthPlan(Base):
     
     # Relationships
     sops: Mapped[List["SOP"]] = relationship("SOP", back_populates="health_plan")
+    protocols: Mapped[List["AttendanceProtocol"]] = relationship(
+        "AttendanceProtocol", back_populates="health_plan", cascade="all, delete-orphan"
+    )
     
     def __repr__(self) -> str:
         return f"<HealthPlan(id={self.id}, name={self.name})>"
+
+
+class AttendanceProtocol(Base):
+    """Attendance protocol instructions per health plan and patient type."""
+
+    __tablename__ = "attendance_protocols"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    health_plan_id: Mapped[int] = mapped_column(
+        ForeignKey("health_plans.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    patient_type: Mapped[PatientType] = mapped_column(Enum(PatientType), nullable=False)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    images_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array of image URLs
+
+    # Relationship
+    health_plan: Mapped["HealthPlan"] = relationship("HealthPlan", back_populates="protocols")
+
+    def __repr__(self) -> str:
+        return f"<AttendanceProtocol(health_plan_id={self.health_plan_id}, type={self.patient_type})>"
 
 
 class SOPStatus(str, enum.Enum):

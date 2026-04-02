@@ -9,6 +9,7 @@ import { onboardingApi } from '../../api/onboarding';
 import type { UserResponse } from '../../api/onboarding';
 import { UserProgressModal } from './UserProgressModal';
 import { UserEditModal } from './UserEditModal';
+import { UserCreateModal } from './UserCreateModal';
 import { useDisclosure } from '@mantine/hooks';
 
 export const UsersList = () => {
@@ -19,6 +20,7 @@ export const UsersList = () => {
   
   const [progressOpened, { open: openProgress, close: closeProgress }] = useDisclosure(false);
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+  const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
 
   const { data: users } = useQuery({
     queryKey: ['users'],
@@ -85,7 +87,12 @@ export const UsersList = () => {
             <Text c="dimmed">Administre os colaboradores e acompanhe o progresso do Onboarding.</Text>
           </Stack>
           
-          <Button leftSection={<UserCheck size={16} />} variant="light" color="mediBlue">
+          <Button 
+            leftSection={<UserCheck size={16} />} 
+            variant="light" 
+            color="mediBlue"
+            onClick={openCreate}
+          >
             Novo Colaborador
           </Button>
         </Group>
@@ -206,6 +213,11 @@ export const UsersList = () => {
         opened={editOpened}
         onClose={closeEdit}
         user={selectedUserEdit}
+      />
+
+      <UserCreateModal
+        opened={createOpened}
+        onClose={closeCreate}
       />
     </Container>
   );

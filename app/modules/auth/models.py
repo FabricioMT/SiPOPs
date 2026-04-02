@@ -12,6 +12,11 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
     GESTOR = "gestor"
     COLABORADOR = "colaborador"
+    # Sector-specific roles
+    SEC_UE_SUS = "sec_ue_sus"          # Secretaria Urgência e Emergência SUS
+    SEC_PA = "sec_pa"                  # Secretaria Pronto Atendimento
+    SEC_PORTARIA = "sec_portaria"      # Secretaria Portaria Principal
+    SEC_GUIAS = "sec_guias"            # Secretaria Central de Guias
 
 
 class User(Base):

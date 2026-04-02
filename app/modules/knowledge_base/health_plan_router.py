@@ -1,14 +1,15 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.modules.auth.models import User
-from app.modules.knowledge_base.models import HealthPlan, SOP
+from app.modules.knowledge_base.models import HealthPlan, SOP, AttendanceProtocol, PatientType
 from app.modules.knowledge_base.schemas import (
-    HealthPlanResponse, SOPResponse
+    HealthPlanResponse, SOPResponse, AttendanceProtocolResponse
 )
 from app.modules.knowledge_base import service
 
@@ -76,3 +77,20 @@ async def list_plan_sops(
     """
     sops = await service.get_health_plan_sops(db, plan_id)
     return [sop_to_response(s) for s in sops]
+
+
+@router.get("/{plan_id}/protocols", response_model=List[AttendanceProtocolResponse])
+async def list_plan_protocols(
+    plan_id: int,
+    patient_type: Optional[PatientType] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    List attendance protocols for a specific health plan, optionally filtered by patient_type.
+    """
+    stmt = select(AttendanceProtocol).where(AttendanceProtocol.health_plan_id == plan_id)
+    if patient_type:
+        stmt = stmt.where(AttendanceProtocol.patient_type == patient_type)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())

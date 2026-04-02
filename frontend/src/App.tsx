@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Title, Text, Container, Center, Loader } from '@mantine/core';
@@ -34,6 +34,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Route protector for specific roles
+const RoleProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
+  const { user, isLoadingAuth } = useAuthStore();
+
+  if (isLoadingAuth) return <Center h="100vh"><Loader size="xl" /></Center>;
+
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // Placeholder components
 const Dashboard = () => (
   <Container>
@@ -48,6 +61,10 @@ const Chat = () => (
     <Text mt="md">Comunicação em tempo real com a gestão.</Text>
   </Container>
 );
+
+import { AlertCircle, Activity, DoorOpen } from 'lucide-react';
+import { SetorHub } from './modules/setores/SetorHub';
+import { GuidesList } from './modules/setores/GuidesList';
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -72,8 +89,93 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<Dashboard />} />
-          <Route path="health-plans" element={<HealthPlanList />} />
-          <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+
+          {/* Setores e Guias SPDATA */}
+          <Route path="secretaria-ue-sus" element={
+            <RoleProtectedRoute allowedRoles={['admin', 'gestor', 'sec_ue_sus']}>
+              <Outlet />
+            </RoleProtectedRoute>
+          }>
+            <Route index element={
+              <SetorHub
+                title="Secretaria Urgência e Emergência SUS"
+                description="Guia de uso do sistema para o setor de Urgência/Emergência"
+                sector="ue_sus"
+                basePath="/secretaria-ue-sus"
+                icon={<AlertCircle size={28} />}
+                color="red"
+              />
+            } />
+            <Route path=":patientType">
+              <Route index element={
+                <GuidesList
+                  sectorLabel="Urgência/Emergência SUS"
+                  sectorKey="ue_sus"
+                  basePath="/secretaria-ue-sus"
+                  sectorColor="red"
+                />
+              } />
+            </Route>
+          </Route>
+
+          <Route path="secretaria-pa" element={
+            <RoleProtectedRoute allowedRoles={['admin', 'gestor', 'sec_pa']}>
+              <Outlet />
+            </RoleProtectedRoute>
+          }>
+            <Route index element={
+              <SetorHub
+                title="Secretaria Pronto Atendimento"
+                description="Guia de uso do sistema para o setor de Pronto Atendimento"
+                sector="pa"
+                basePath="/secretaria-pa"
+                icon={<Activity size={28} />}
+                color="blue"
+              />
+            } />
+            <Route path=":patientType">
+              <Route index element={
+                <GuidesList
+                  sectorLabel="Pronto Atendimento"
+                  sectorKey="pa"
+                  basePath="/secretaria-pa"
+                  sectorColor="blue"
+                />
+              } />
+              <Route path="health-plans" element={<HealthPlanList />} />
+              <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+            </Route>
+          </Route>
+
+          <Route path="secretaria-portaria" element={
+            <RoleProtectedRoute allowedRoles={['admin', 'gestor', 'sec_portaria']}>
+              <Outlet />
+            </RoleProtectedRoute>
+          }>
+            <Route index element={
+              <SetorHub
+                title="Secretaria Portaria Principal"
+                description="Guia de uso do sistema para o setor da Portaria"
+                sector="portaria"
+                basePath="/secretaria-portaria"
+                icon={<DoorOpen size={28} />}
+                color="teal"
+              />
+            } />
+            <Route path=":patientType">
+              <Route index element={
+                <GuidesList
+                  sectorLabel="Portaria Principal"
+                  sectorKey="portaria"
+                  basePath="/secretaria-portaria"
+                  sectorColor="teal"
+                />
+              } />
+              <Route path="health-plans" element={<HealthPlanList />} />
+              <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+            </Route>
+          </Route>
+
           <Route path="sops/:id" element={<SOPDetail />} />
           <Route path="onboarding" element={<OnboardingList />} />
           <Route path="onboarding/:id" element={<OnboardingDetail />} />

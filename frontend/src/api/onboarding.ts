@@ -67,9 +67,19 @@ export const onboardingApi = {
     return response.data;
   },
 
+  createUser: async (data: { email: string; full_name: string; role: string }) => {
+    const response = await apiClient.post<UserResponse & { plain_password: string }>('/auth/users', data);
+    return response.data;
+  },
+
   deleteUser: async (userId: number) => {
     await apiClient.delete(`/auth/users/${userId}`);
-  }
+  },
+
+  updateGuide: async (guideId: number, data: { title?: string; content?: string; order_index?: number }) => {
+    const response = await apiClient.patch(`/spdata-guides/${guideId}`, data);
+    return response.data;
+  },
 };
 
 export interface UserResponse {

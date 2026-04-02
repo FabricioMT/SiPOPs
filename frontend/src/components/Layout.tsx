@@ -1,8 +1,9 @@
 import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete, Menu, Avatar, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { 
-  LayoutDashboard, BookOpen, ListTodo, MessageSquare, LogOut, 
-  User as UserIcon, Sun, Moon, Search, Hash, Shield, Settings, ChevronDown 
+  LayoutDashboard, ListTodo, MessageSquare, LogOut, 
+  User as UserIcon, Sun, Moon, Search, Hash, Shield, Settings, ChevronDown,
+  AlertCircle, Activity, DoorOpen
 } from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -42,16 +43,49 @@ export function Layout() {
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  const links = [
+  // Base navigation links
+  const mainLinks = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: BookOpen, label: 'Planos de Saúde', path: '/health-plans' },
     { icon: ListTodo, label: 'Onboarding', path: '/onboarding' },
     { icon: Hash, label: 'Códigos TUSS', path: '/tuss' },
     { icon: MessageSquare, label: 'Chat', path: '/chat' },
   ];
 
+  // Sector links with RBAC logic
+  const sectorLinks = [];
+  const isAdminOrGestor = user?.role === 'admin' || user?.role === 'gestor';
+
+  if (isAdminOrGestor || user?.role === 'sec_ue_sus') {
+    sectorLinks.push({ 
+      icon: AlertCircle, 
+      label: 'Urgência/Emergência SUS', 
+      path: '/secretaria-ue-sus',
+      color: 'red'
+    });
+  }
+
+  if (isAdminOrGestor || user?.role === 'sec_pa') {
+    sectorLinks.push({ 
+      icon: Activity, 
+      label: 'Pronto Atendimento', 
+      path: '/secretaria-pa',
+      color: 'blue'
+    });
+  }
+
+  if (isAdminOrGestor || user?.role === 'sec_portaria') {
+    sectorLinks.push({ 
+      icon: DoorOpen, 
+      label: 'Portaria Principal', 
+      path: '/secretaria-portaria',
+      color: 'teal'
+    });
+  }
+
+  // Admin specific
+  const adminLinks = [];
   if (user?.role === 'admin') {
-    links.push({ icon: Shield, label: 'Gestão de Equipe', path: '/users' });
+    adminLinks.push({ icon: Shield, label: 'Gestão de Equipe', path: '/users' });
   }
 
   const handleLogout = () => {
@@ -156,8 +190,9 @@ export function Layout() {
       </AppShell.Header>
 
       <AppShell.Navbar p="md" style={{ display: 'flex', flexDirection: 'column' }}>
-        <Stack flex={1} gap="xs">
-          {links.map((link) => (
+        <Stack flex={1} gap="xs" style={{ overflowY: 'auto' }}>
+          {/* Main Navigation */}
+          {mainLinks.map((link) => (
             <NavLink
               key={link.path}
               label={link.label}
@@ -169,6 +204,44 @@ export function Layout() {
               }}
             />
           ))}
+
+          {/* SPDATA Sectors */}
+          {sectorLinks.length > 0 && (
+            <>
+              <Divider my="sm" label="Guias" labelPosition="center" />
+              {sectorLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  label={link.label}
+                  leftSection={<link.icon size="1.2rem" strokeWidth={1.5} color={link.color} />}
+                  active={location.pathname === link.path || location.pathname.startsWith(`${link.path}/`)}
+                  onClick={() => {
+                    navigate(link.path);
+                    if (opened) toggle();
+                  }}
+                />
+              ))}
+            </>
+          )}
+
+          {/* Admin Section */}
+          {adminLinks.length > 0 && (
+            <>
+              <Divider my="sm" label="Administração" labelPosition="center" />
+              {adminLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  label={link.label}
+                  leftSection={<link.icon size="1.2rem" strokeWidth={1.5} />}
+                  active={location.pathname === link.path}
+                  onClick={() => {
+                    navigate(link.path);
+                    if (opened) toggle();
+                  }}
+                />
+              ))}
+            </>
+          )}
         </Stack>
 
         <Stack mt="auto">

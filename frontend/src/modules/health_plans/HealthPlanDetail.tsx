@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { Title, Text, Loader, Center, Container, Grid, Card, Group, Button, Breadcrumbs, Anchor, Paper } from '@mantine/core';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, FileText, ExternalLink } from 'lucide-react';
+import { Title, Text, Loader, Center, Container, Grid, Card, Group, Button, Breadcrumbs, Anchor, Paper, Stack, ThemeIcon, Divider, SimpleGrid } from '@mantine/core';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChevronLeft, FileText, ExternalLink, Users, UserCheck, BookOpen } from 'lucide-react';
+import { useDisclosure } from '@mantine/hooks';
+import { useState } from 'react';
 import apiClient from '../../api/client';
+import { ProtocolModal } from './ProtocolModal';
 
 interface HealthPlan {
   id: number;
@@ -17,9 +20,20 @@ interface SOP {
   current_version_number: number;
 }
 
+interface Protocol {
+  id: number;
+  title: string;
+  content: string | null;
+  patient_type: 'externo' | 'interno';
+  images_json: string | null;
+}
+
 export function HealthPlanDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [opened, { open, close }] = useDisclosure(false);
+  const [selectedProtocol, setSelectedProtocol] = useState<Protocol | null>(null);
 
   const { data: plan, isLoading: isLoadingPlan } = useQuery<HealthPlan>({
     queryKey: ['health-plan', id],
@@ -38,7 +52,32 @@ export function HealthPlanDetail() {
     enabled: !!id,
   });
 
-  if (isLoadingPlan || isLoadingSops) {
+  const { data: protocols, isLoading: isLoadingProtocols } = useQuery<Protocol[]>({
+    queryKey: ['health-plan-protocols', id],
+    queryFn: async () => {
+      const response = await apiClient.get(`/health-plans/${id}/protocols`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
+
+  const getSectoInfo = () => {
+    const parts = location.pathname.split('/');
+    const sector = parts[1] || '';
+    const type = parts[2] || '';
+    
+    let sectorName = 'Setor';
+    if (sector.includes('pa')) sectorName = 'Pronto Atendimento';
+    else if (sector.includes('portaria')) sectorName = 'Portaria';
+    
+    const typeName = type === 'externo' ? 'Externo' : 'Interno';
+    
+    return { sectorName, typeName, baseSectorPath: `/${sector}/${type}`, basePlansPath: `/${sector}/${type}/health-plans` };
+  };
+
+  const { sectorName, typeName, baseSectorPath, basePlansPath } = getSectoInfo();
+
+  if (isLoadingPlan || isLoadingSops || isLoadingProtocols) {
     return (
       <Center h="50vh">
         <Loader size="xl" />
@@ -50,19 +89,29 @@ export function HealthPlanDetail() {
     return (
       <Container>
         <Text color="red">Plano de saúde não encontrado.</Text>
-        <Button onClick={() => navigate('/health-plans')}>Voltar</Button>
+        <Button onClick={() => navigate(-1)}>Voltar</Button>
       </Container>
     );
   }
 
   const items = [
-    { title: 'Planos de Saúde', href: '/health-plans' },
-    { title: plan.name, href: `/health-plans/${id}` },
+    { title: sectorName, href: `/${location.pathname.split('/')[1]}` },
+    { title: typeName, href: baseSectorPath },
+    { title: 'Convênios', href: basePlansPath },
+    { title: plan.name, href: '#' },
   ].map((item, index) => (
-    <Anchor href={item.href} key={index} onClick={(e) => { e.preventDefault(); navigate(item.href); }}>
+    <Anchor href={item.href} key={index} onClick={(e) => { e.preventDefault(); if (item.href !== '#') navigate(item.href); }}>
       {item.title}
     </Anchor>
   ));
+
+  const handleOpenProtocol = (type: 'externo' | 'interno') => {
+    const protocol = protocols?.find(p => p.patient_type === type);
+    if (protocol) {
+      setSelectedProtocol(protocol);
+      open();
+    }
+  };
 
   return (
     <Container size="lg">
@@ -73,7 +122,7 @@ export function HealthPlanDetail() {
           <Button 
             variant="subtle" 
             leftSection={<ChevronLeft size={16} />} 
-            onClick={() => navigate('/health-plans')}
+            onClick={() => navigate(basePlansPath)}
           >
             Voltar
           </Button>
@@ -81,7 +130,81 @@ export function HealthPlanDetail() {
         </Group>
       </Group>
 
-      <Title order={4} mb="md">Procedimentos e POPs Disponíveis</Title>
+      {/* Protocol Section */}
+      <Stack mb="xl">
+        <Group gap="xs">
+          <ThemeIcon variant="light" color="blue" radius="md">
+            <BookOpen size={20} />
+          </ThemeIcon>
+          <Title order={4}>Protocolos de Atendimento</Title>
+        </Group>
+        <Text size="sm" c="dimmed">Instruções específicas para abertura de guias e recepção</Text>
+        
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+          <Card 
+            withBorder 
+            radius="md" 
+            p="md" 
+            style={{ 
+              cursor: protocols?.some(p => p.patient_type === 'externo') ? 'pointer' : 'default',
+              opacity: protocols?.some(p => p.patient_type === 'externo') ? 1 : 0.6 
+            }}
+            onClick={() => handleOpenProtocol('externo')}
+          >
+            <Group justify="space-between" wrap="nowrap">
+              <Group gap="sm">
+                <ThemeIcon radius="xl" size="lg" color="blue" variant="light">
+                  <Users size={20} />
+                </ThemeIcon>
+                <div>
+                  <Text fw={700}>Paciente Externo</Text>
+                  <Text size="xs" c="dimmed">Consultas e Exames</Text>
+                </div>
+              </Group>
+              <Button 
+                variant="light" 
+                size="xs" 
+                disabled={!protocols?.some(p => p.patient_type === 'externo')}
+              >
+                {protocols?.some(p => p.patient_type === 'externo') ? 'Ver Protocolo' : 'Não cadastrado'}
+              </Button>
+            </Group>
+          </Card>
+
+          <Card 
+            withBorder 
+            radius="md" 
+            p="md"
+            style={{ 
+              cursor: protocols?.some(p => p.patient_type === 'interno') ? 'pointer' : 'default',
+              opacity: protocols?.some(p => p.patient_type === 'interno') ? 1 : 0.6 
+            }}
+            onClick={() => handleOpenProtocol('interno')}
+          >
+            <Group justify="space-between" wrap="nowrap">
+              <Group gap="sm">
+                <ThemeIcon radius="xl" size="lg" color="teal" variant="light">
+                  <UserCheck size={20} />
+                </ThemeIcon>
+                <div>
+                  <Text fw={700}>Paciente Interno</Text>
+                  <Text size="xs" c="dimmed">Internação e Urgência</Text>
+                </div>
+              </Group>
+              <Button 
+                variant="light" 
+                size="xs" 
+                color="teal"
+                disabled={!protocols?.some(p => p.patient_type === 'interno')}
+              >
+                {protocols?.some(p => p.patient_type === 'interno') ? 'Ver Protocolo' : 'Não cadastrado'}
+              </Button>
+            </Group>
+          </Card>
+        </SimpleGrid>
+      </Stack>
+
+      <Divider my="xl" label="Procedimentos e POPs Disponíveis" labelPosition="center" />
 
       {sops?.length === 0 ? (
         <Paper p="xl" withBorder style={{ backgroundColor: '#f9fafb' }}>
@@ -94,18 +217,9 @@ export function HealthPlanDetail() {
               <Card shadow="sm" padding="lg" radius="md" withBorder>
                 <Group justify="space-between" wrap="nowrap">
                   <Group wrap="nowrap">
-                    <div style={{ 
-                      width: 40, 
-                      height: 40, 
-                      borderRadius: 8, 
-                      backgroundColor: '#e7f5ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#228be6'
-                    }}>
+                    <ThemeIcon variant="light" color="mediBlue" size="lg">
                       <FileText size={24} />
-                    </div>
+                    </ThemeIcon>
                     <div>
                       <Text fw={600} size="md" lineClamp={1}>{sop.title}</Text>
                       <Text size="xs" c="dimmed">{sop.category} • Versão {sop.current_version_number}</Text>
@@ -125,6 +239,12 @@ export function HealthPlanDetail() {
           ))}
         </Grid>
       )}
+
+      <ProtocolModal 
+        opened={opened} 
+        onClose={close} 
+        protocol={selectedProtocol}
+      />
     </Container>
   );
 }

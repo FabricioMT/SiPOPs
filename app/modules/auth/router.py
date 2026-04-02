@@ -5,17 +5,51 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
-from app.modules.auth.models import User
+from app.core.dependencies import get_admin_user
+from app.modules.auth.models import User, UserRole
 from app.modules.auth.schemas import (
     UserCreate, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest, UserUpdate,
-    UserProfileUpdate, UserPasswordUpdate
+    UserProfileUpdate, UserPasswordUpdate, UserAdminCreate, UserAdminResponse
 )
 from app.modules.auth import service
-from app.modules.auth.utils import create_password_reset_token, send_reset_password_email
-
-
+from app.modules.auth.utils import create_password_reset_token, send_reset_password_email, verify_password_reset_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+@router.post("/users", response_model=UserAdminResponse, status_code=status.HTTP_201_CREATED)
+async def create_user_admin(
+    user_data: UserAdminCreate,
+    admin_user: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Create a new user by an admin (Admin only).
+    The system generates an automatic password and returns it in the response.
+    """
+    # Check if user already exists
+    existing_user = await service.get_user_by_email(db, user_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    user, plain_password = await service.create_user_admin(db, user_data)
+    await db.commit()
+    
+    # Map to schema manually to include plain_password
+    return UserAdminResponse(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        is_active=user.is_active,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        plain_password=plain_password
+    )
+
+
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -148,8 +182,6 @@ async def reset_password(
     return {"msg": "Password updated successfully."}
 
 
-from app.core.dependencies import get_admin_user
-from app.modules.auth.models import UserRole
 
 @router.get("/users", response_model=List[UserResponse])
 async def list_users(
