@@ -1,14 +1,21 @@
 import apiClient from './client';
 
 export interface PlaylistSOPResponse {
-  sop_id: number;
+  sop_id: number | null;
+  protocol_id: number | null;
   order_index: number;
-  sop: {
+  sop?: {
     id: number;
     title: string;
     category: string;
     status: string;
     current_version_number: number | null;
+  };
+  protocol?: {
+    id: number;
+    health_plan_id: number;
+    patient_type: string;
+    title: string;
   };
 }
 

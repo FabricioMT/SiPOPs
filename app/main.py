@@ -14,7 +14,7 @@ from app.modules.tuss.router import router as tuss_router
 from app.modules.spdata_guides.router import router as spdata_router
 # Import models to register them with Base for init_db
 from app.modules.auth.models import User  # noqa: F401
-from app.modules.knowledge_base.models import SOP, SOPVersion, SOPReading, HealthPlan, AttendanceProtocol  # noqa: F401
+from app.modules.knowledge_base.models import SOP, SOPVersion, SOPReading, HealthPlan, AttendanceProtocol, ProtocolReading  # noqa: F401
 from app.modules.onboarding.models import Playlist, PlaylistSOP  # noqa: F401
 from app.modules.chat.models import ChatMessage  # noqa: F401
 from app.modules.tuss.models import TUSSCode, TUSSUsage  # noqa: F401

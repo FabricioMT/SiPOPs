@@ -57,6 +57,34 @@ class AttendanceProtocol(Base):
         return f"<AttendanceProtocol(health_plan_id={self.health_plan_id}, type={self.patient_type})>"
 
 
+class ProtocolReading(Base):
+    """Audit log for AttendanceProtocol acknowledgments (Li e Estou Ciente)."""
+
+    __tablename__ = "protocol_readings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    protocol_id: Mapped[int] = mapped_column(
+        ForeignKey("attendance_protocols.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+
+    acknowledged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.current_timestamp(),
+        nullable=False
+    )
+
+    # Relationships
+    protocol: Mapped["AttendanceProtocol"] = relationship("AttendanceProtocol")
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id])
+
+    def __repr__(self) -> str:
+        return f"<ProtocolReading(user_id={self.user_id}, protocol_id={self.protocol_id})>"
+
+
+
 class SOPStatus(str, enum.Enum):
     """Status of a Standard Operating Procedure."""
     DRAFT = "draft"

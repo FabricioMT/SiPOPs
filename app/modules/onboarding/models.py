@@ -8,7 +8,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from app.modules.auth.models import User
-    from app.modules.knowledge_base.models import SOP
+    from app.modules.knowledge_base.models import SOP, AttendanceProtocol
 
 
 class Playlist(Base):
@@ -50,18 +50,20 @@ class Playlist(Base):
 
 
 class PlaylistSOP(Base):
-    """Association model between Playlists and SOPs with ordering."""
+    """Association model between Playlists and SOPs/Protocols with ordering."""
     
     __tablename__ = "playlist_sops"
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     playlist_id: Mapped[int] = mapped_column(ForeignKey("playlists.id", ondelete="CASCADE"), nullable=False)
-    sop_id: Mapped[int] = mapped_column(ForeignKey("sops.id", ondelete="CASCADE"), nullable=False)
+    sop_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sops.id", ondelete="CASCADE"), nullable=True)
+    protocol_id: Mapped[Optional[int]] = mapped_column(ForeignKey("attendance_protocols.id", ondelete="CASCADE"), nullable=True)
     order_index: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     
     # Relationships
     playlist: Mapped["Playlist"] = relationship("Playlist", back_populates="sops")
-    sop: Mapped["SOP"] = relationship("SOP")
+    sop: Mapped[Optional["SOP"]] = relationship("SOP")
+    protocol: Mapped[Optional["AttendanceProtocol"]] = relationship("AttendanceProtocol")
     
     def __repr__(self) -> str:
-        return f"<PlaylistSOP(playlist_id={self.playlist_id}, sop_id={self.sop_id}, order={self.order_index})>"
+        return f"<PlaylistSOP(playlist_id={self.playlist_id}, sop_id={self.sop_id}, protocol_id={self.protocol_id})>"

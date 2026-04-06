@@ -9,6 +9,7 @@ import { ForgotPassword } from './modules/auth/ForgotPassword';
 import { ResetPassword } from './modules/auth/ResetPassword';
 import { HealthPlanList } from './modules/health_plans/HealthPlanList';
 import { HealthPlanDetail } from './modules/health_plans/HealthPlanDetail';
+import { HealthPlanGuide } from './modules/health_plans/HealthPlanGuide';
 import { SOPDetail } from './modules/knowledge_base/SOPDetail';
 import { OnboardingList } from './modules/onboarding/OnboardingList';
 import { OnboardingDetail } from './modules/onboarding/OnboardingDetail';
@@ -144,6 +145,7 @@ function App() {
               } />
               <Route path="health-plans" element={<HealthPlanList />} />
               <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+              <Route path="health-plans/:id/guide/:protocolType" element={<HealthPlanGuide />} />
             </Route>
           </Route>
 
@@ -173,6 +175,7 @@ function App() {
               } />
               <Route path="health-plans" element={<HealthPlanList />} />
               <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+              <Route path="health-plans/:id/guide/:protocolType" element={<HealthPlanGuide />} />
             </Route>
           </Route>
 

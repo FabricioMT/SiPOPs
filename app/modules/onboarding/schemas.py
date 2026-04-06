@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from app.modules.knowledge_base.schemas import SOPResponse
+from app.modules.knowledge_base.schemas import SOPResponse, AttendanceProtocolResponse
 
 
 # ============== Playlist Schemas ==============
@@ -26,10 +26,12 @@ class PlaylistUpdate(BaseModel):
 
 
 class PlaylistSOPResponse(BaseModel):
-    """Schema for SOP association in a playlist response."""
-    sop_id: int
+    """Schema for SOP or Protocol association in a playlist response."""
+    sop_id: Optional[int] = None
+    protocol_id: Optional[int] = None
     order_index: int
-    sop: SOPResponse
+    sop: Optional[SOPResponse] = None
+    protocol: Optional[AttendanceProtocolResponse] = None
     
     class Config:
         from_attributes = True
@@ -54,8 +56,9 @@ class PlaylistDetailResponse(PlaylistResponse):
 # ============== Management Schemas ==============
 
 class PlaylistSOPAdd(BaseModel):
-    """Schema for adding an SOP to a playlist."""
-    sop_id: int
+    """Schema for adding an SOP or Protocol to a playlist."""
+    sop_id: Optional[int] = None
+    protocol_id: Optional[int] = None
     order_index: Optional[int] = None
 
 

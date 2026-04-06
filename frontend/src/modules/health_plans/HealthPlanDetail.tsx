@@ -2,10 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Title, Text, Loader, Center, Container, Grid, Card, Group, Button, Breadcrumbs, Anchor, Paper, Stack, ThemeIcon, Divider, SimpleGrid } from '@mantine/core';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, FileText, ExternalLink, Users, UserCheck, BookOpen } from 'lucide-react';
-import { useDisclosure } from '@mantine/hooks';
-import { useState } from 'react';
 import apiClient from '../../api/client';
-import { ProtocolModal } from './ProtocolModal';
 
 interface HealthPlan {
   id: number;
@@ -32,8 +29,6 @@ export function HealthPlanDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [opened, { open, close }] = useDisclosure(false);
-  const [selectedProtocol, setSelectedProtocol] = useState<Protocol | null>(null);
 
   const { data: plan, isLoading: isLoadingPlan } = useQuery<HealthPlan>({
     queryKey: ['health-plan', id],
@@ -108,8 +103,7 @@ export function HealthPlanDetail() {
   const handleOpenProtocol = (type: 'externo' | 'interno') => {
     const protocol = protocols?.find(p => p.patient_type === type);
     if (protocol) {
-      setSelectedProtocol(protocol);
-      open();
+      navigate(`${location.pathname}/guide/${type}`);
     }
   };
 
@@ -138,7 +132,7 @@ export function HealthPlanDetail() {
           </ThemeIcon>
           <Title order={4}>Protocolos de Atendimento</Title>
         </Group>
-        <Text size="sm" c="dimmed">Instruções específicas para abertura de guias e recepção</Text>
+        <Text size="sm" c="dimmed">Trilhas de treinamento passo a passo para cada tipo de atendimento</Text>
         
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
           <Card 
@@ -166,7 +160,7 @@ export function HealthPlanDetail() {
                 size="xs" 
                 disabled={!protocols?.some(p => p.patient_type === 'externo')}
               >
-                {protocols?.some(p => p.patient_type === 'externo') ? 'Ver Protocolo' : 'Não cadastrado'}
+                {protocols?.some(p => p.patient_type === 'externo') ? 'Ver Guia de Treinamento' : 'Não cadastrado'}
               </Button>
             </Group>
           </Card>
@@ -197,7 +191,7 @@ export function HealthPlanDetail() {
                 color="teal"
                 disabled={!protocols?.some(p => p.patient_type === 'interno')}
               >
-                {protocols?.some(p => p.patient_type === 'interno') ? 'Ver Protocolo' : 'Não cadastrado'}
+                {protocols?.some(p => p.patient_type === 'interno') ? 'Ver Guia de Treinamento' : 'Não cadastrado'}
               </Button>
             </Group>
           </Card>
@@ -240,11 +234,6 @@ export function HealthPlanDetail() {
         </Grid>
       )}
 
-      <ProtocolModal 
-        opened={opened} 
-        onClose={close} 
-        protocol={selectedProtocol}
-      />
     </Container>
   );
 }

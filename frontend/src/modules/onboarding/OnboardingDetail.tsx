@@ -102,60 +102,74 @@ export const OnboardingDetail = () => {
         </Paper>
 
         <Stack gap="md">
-          <Title order={3}>Procedimentos Operacionais ({sops.length})</Title>
+          <Title order={3}>Procedimentos e Treinamentos ({sops.length})</Title>
           
           {sops.length === 0 ? (
             <Alert color="blue" title="Trilha vazia">
-              Esta trilha ainda não possui nenhum procedimento adicionado pelos gestores.
+              Esta trilha ainda não possui nenhum procedimento ou guia adicionado pelos gestores.
             </Alert>
           ) : (
             <Stack gap="sm">
-              {sops.map((item, index) => (
-                <Paper 
-                  key={item.sop.id}
-                  withBorder 
-                  p="md" 
-                  radius="md" 
-                  style={{ 
-                    cursor: 'pointer', 
-                    transition: 'border-color 0.2s ease, background-color 0.2s ease'
-                  }}
-                  onClick={() => navigate(`/sops/${item.sop.id}`)}
-                  className="hover:border-blue-500 hover:bg-blue-50/30"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--mantine-color-mediBlue-outlineHover)';
-                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-0)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--mantine-color-default-border)';
-                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-body)';
-                  }}
-                >
-                  <Group wrap="nowrap" align="center">
-                    <ThemeIcon 
-                      size="xl" 
-                      radius="xl" 
-                      variant="light" 
-                      color="mediBlue"
-                      style={{ flexShrink: 0 }}
-                    >
-                      {index + 1}
-                    </ThemeIcon>
-                    
-                    <Stack gap={4} style={{ flexGrow: 1 }}>
-                      <Title order={5} c="mediBlue">{item.sop.title}</Title>
-                      <Group gap="xs">
-                        <Badge size="xs" color="gray" variant="outline">{item.sop.category || 'Geral'}</Badge>
-                        <Badge size="xs" color="blue" variant="light">Versão {item.sop.current_version_number || 1}</Badge>
-                      </Group>
-                    </Stack>
-                    
-                    <Button variant="light" size="sm">
-                      Acessar Procedimento
-                    </Button>
-                  </Group>
-                </Paper>
-              ))}
+              {sops.map((item, index) => {
+                const isProtocol = !!item.protocol_id;
+                const title = isProtocol ? item.protocol?.title : item.sop?.title;
+                const category = isProtocol ? "Guia de Convênio" : (item.sop?.category || 'Geral');
+                const path = isProtocol 
+                  ? `/health-plans/${item.protocol?.health_plan_id}/guide/${item.protocol?.patient_type}`
+                  : `/sops/${item.sop?.id}`;
+
+                return (
+                  <Paper 
+                    key={index}
+                    withBorder 
+                    p="md" 
+                    radius="md" 
+                    style={{ 
+                      cursor: 'pointer', 
+                      transition: 'border-color 0.2s ease, background-color 0.2s ease'
+                    }}
+                    onClick={() => navigate(path)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--mantine-color-mediBlue-outlineHover)';
+                      e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-0)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--mantine-color-default-border)';
+                      e.currentTarget.style.backgroundColor = 'var(--mantine-color-body)';
+                    }}
+                  >
+                    <Group wrap="nowrap" align="center">
+                      <ThemeIcon 
+                        size="xl" 
+                        radius="xl" 
+                        variant="light" 
+                        color={isProtocol ? "teal" : "mediBlue"}
+                        style={{ flexShrink: 0 }}
+                      >
+                        {index + 1}
+                      </ThemeIcon>
+                      
+                      <Stack gap={4} style={{ flexGrow: 1 }}>
+                        <Title order={5} c="mediBlue">{title}</Title>
+                        <Group gap="xs">
+                          <Badge size="xs" color={isProtocol ? "teal" : "gray"} variant="outline">
+                            {category}
+                          </Badge>
+                          {!isProtocol && (
+                            <Badge size="xs" color="blue" variant="light">
+                              Versão {item.sop?.current_version_number || 1}
+                            </Badge>
+                          )}
+                        </Group>
+                      </Stack>
+                      
+                      <Button variant="light" size="sm" color={isProtocol ? "teal" : "blue"}>
+                        {isProtocol ? "Ver Guia" : "Ver SOP"}
+                      </Button>
+                    </Group>
+                  </Paper>
+                );
+              })}
             </Stack>
           )}
         </Stack>

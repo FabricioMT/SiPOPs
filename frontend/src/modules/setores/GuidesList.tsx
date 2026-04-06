@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   Container, Title, Text, Stack, Paper, Group, ThemeIcon, Button, 
   Breadcrumbs, Anchor, Center, Loader, Divider, Alert, Badge,
-  ActionIcon, Tooltip, Box
+  ActionIcon, Tooltip
 } from '@mantine/core';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ChevronLeft, BookOpen, Info, Pencil } from 'lucide-react';

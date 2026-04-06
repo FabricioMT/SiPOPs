@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.modules.auth.models import User
-from app.modules.knowledge_base.models import SOPVersion, SOPReading, SOP
+from app.modules.knowledge_base.models import SOPVersion, SOPReading, SOP, AttendanceProtocol, ProtocolReading
 from app.modules.onboarding.models import Playlist, PlaylistSOP
 from app.modules.onboarding.schemas import PlaylistCreate, PlaylistUpdate
 
@@ -24,11 +24,12 @@ async def create_playlist(db: AsyncSession, playlist_data: PlaylistCreate, user:
 
 
 async def get_playlist_by_id(db: AsyncSession, playlist_id: int) -> Optional[Playlist]:
-    """Get playlist by ID with SOPs loaded."""
+    """Get playlist by ID with SOPs and Protocols loaded."""
     result = await db.execute(
         select(Playlist)
         .options(
-            selectinload(Playlist.sops).selectinload(PlaylistSOP.sop).selectinload(SOP.versions)
+            selectinload(Playlist.sops).selectinload(PlaylistSOP.sop).selectinload(SOP.versions),
+            selectinload(Playlist.sops).selectinload(PlaylistSOP.protocol)
         )
         .where(Playlist.id == playlist_id)
     )
@@ -68,10 +69,11 @@ async def update_playlist(
 async def add_sop_to_playlist(
     db: AsyncSession, 
     playlist_id: int, 
-    sop_id: int, 
+    sop_id: Optional[int] = None, 
+    protocol_id: Optional[int] = None,
     order_index: Optional[int] = None
 ) -> PlaylistSOP:
-    """Add an SOP to a playlist."""
+    """Add an SOP or Protocol to a playlist."""
     # If order_index is not provided, put it at the end
     if order_index is None:
         max_order = await db.execute(
@@ -84,6 +86,7 @@ async def add_sop_to_playlist(
     playlist_sop = PlaylistSOP(
         playlist_id=playlist_id,
         sop_id=sop_id,
+        protocol_id=protocol_id,
         order_index=order_index
     )
     db.add(playlist_sop)
@@ -113,8 +116,9 @@ async def calculate_progress(
     """
     Calculate user progress in a playlist.
     
-    Progress is based on whether the user has read the CURRENT version
-    of each SOP in the playlist.
+    Progress is based on:
+    - SOPs: if the user has read the CURRENT version.
+    - Protocols: if the user has acknowledged the protocol.
     """
     playlist = await get_playlist_by_id(db, playlist_id)
     if not playlist:
@@ -126,19 +130,30 @@ async def calculate_progress(
     
     read_count = 0
     for ps in playlist.sops:
-        sop = ps.sop
-        current_version = sop.current_version
-        if not current_version:
-            continue
-            
-        # Check if user read this specific version
-        reading_exists = await db.execute(
-            select(SOPReading)
-            .where(SOPReading.sop_version_id == current_version.id)
-            .where(SOPReading.user_id == user_id)
-        )
-        if reading_exists.scalar_one_or_none():
-            read_count += 1
+        # Case 1: SOP
+        if ps.sop_id:
+            sop = ps.sop
+            current_version = sop.current_version
+            if not current_version:
+                continue
+                
+            reading_exists = await db.execute(
+                select(SOPReading)
+                .where(SOPReading.sop_version_id == current_version.id)
+                .where(SOPReading.user_id == user_id)
+            )
+            if reading_exists.scalar_one_or_none():
+                read_count += 1
+        
+        # Case 2: Protocol
+        elif ps.protocol_id:
+            reading_exists = await db.execute(
+                select(ProtocolReading)
+                .where(ProtocolReading.protocol_id == ps.protocol_id)
+                .where(ProtocolReading.user_id == user_id)
+            )
+            if reading_exists.scalar_one_or_none():
+                read_count += 1
             
     percentage = (read_count / total_count) * 100
     return {
