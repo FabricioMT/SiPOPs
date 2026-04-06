@@ -46,7 +46,7 @@ export function Layout() {
   // Base navigation links
   const mainLinks = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: ListTodo, label: 'Onboarding', path: '/onboarding' },
+    { icon: ListTodo, label: 'Trilhas de Capacitação', path: '/onboarding' },
     { icon: Hash, label: 'Códigos TUSS', path: '/tuss' },
     { icon: MessageSquare, label: 'Chat', path: '/chat' },
   ];
@@ -59,7 +59,7 @@ export function Layout() {
     sectorLinks.push({ 
       icon: AlertCircle, 
       label: 'Urgência/Emergência SUS', 
-      path: '/secretaria-ue-sus',
+      path: '/ue-sus',
       color: 'red'
     });
   }
@@ -68,7 +68,7 @@ export function Layout() {
     sectorLinks.push({ 
       icon: Activity, 
       label: 'Pronto Atendimento', 
-      path: '/secretaria-pa',
+      path: '/pa',
       color: 'blue'
     });
   }
@@ -77,7 +77,7 @@ export function Layout() {
     sectorLinks.push({ 
       icon: DoorOpen, 
       label: 'Portaria Principal', 
-      path: '/secretaria-portaria',
+      path: '/portaria',
       color: 'teal'
     });
   }

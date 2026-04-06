@@ -58,16 +58,34 @@ export function HealthPlanDetail() {
 
   const getSectoInfo = () => {
     const parts = location.pathname.split('/');
+    // Check if the path starts with a valid sector
     const sector = parts[1] || '';
+    const isSectorPath = ['ue-sus', 'pa', 'portaria'].includes(sector);
+    
+    if (!isSectorPath) {
+      return { 
+        sectorName: null, 
+        typeName: null, 
+        baseSectorPath: '/onboarding', 
+        basePlansPath: '/onboarding'
+      };
+    }
+
     const type = parts[2] || '';
     
     let sectorName = 'Setor';
-    if (sector.includes('pa')) sectorName = 'Pronto Atendimento';
-    else if (sector.includes('portaria')) sectorName = 'Portaria';
+    if (sector === 'pa') sectorName = 'Pronto Atendimento';
+    else if (sector === 'portaria') sectorName = 'Portaria';
+    else if (sector === 'ue-sus') sectorName = 'Urgência/Emergência SUS';
     
     const typeName = type === 'externo' ? 'Externo' : 'Interno';
     
-    return { sectorName, typeName, baseSectorPath: `/${sector}/${type}`, basePlansPath: `/${sector}/${type}/health-plans` };
+    return { 
+      sectorName, 
+      typeName, 
+      baseSectorPath: `/${sector}/${type}`, 
+      basePlansPath: `/${sector}/${type}/health-plans` 
+    };
   };
 
   const { sectorName, typeName, baseSectorPath, basePlansPath } = getSectoInfo();
@@ -89,12 +107,21 @@ export function HealthPlanDetail() {
     );
   }
 
-  const items = [
-    { title: sectorName, href: `/${location.pathname.split('/')[1]}` },
-    { title: typeName, href: baseSectorPath },
-    { title: 'Convênios', href: basePlansPath },
-    { title: plan.name, href: '#' },
-  ].map((item, index) => (
+  const breadcrumbItems = [
+    { title: 'Dashboard', href: '/' },
+  ];
+
+  if (sectorName) {
+    breadcrumbItems.push({ title: sectorName, href: `/${location.pathname.split('/')[1]}` });
+    breadcrumbItems.push({ title: typeName!, href: baseSectorPath });
+    breadcrumbItems.push({ title: 'Convênios', href: basePlansPath });
+  } else {
+    breadcrumbItems.push({ title: 'Trilhas de Capacitação', href: '/onboarding' });
+  }
+
+  breadcrumbItems.push({ title: plan.name, href: '#' });
+
+  const items = breadcrumbItems.map((item, index) => (
     <Anchor href={item.href} key={index} onClick={(e) => { e.preventDefault(); if (item.href !== '#') navigate(item.href); }}>
       {item.title}
     </Anchor>

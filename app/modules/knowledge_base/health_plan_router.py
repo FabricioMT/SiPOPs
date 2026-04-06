@@ -53,7 +53,7 @@ def sop_to_response(sop: SOP) -> SOPResponse:
         current_version_number=sop.current_version.version_number if sop.current_version else None
     )
 
-@router.get("/", response_model=List[HealthPlanResponse])
+@router.get("", response_model=List[HealthPlanResponse])
 async def list_health_plans(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

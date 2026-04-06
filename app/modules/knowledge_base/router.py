@@ -49,7 +49,7 @@ def sop_to_detail_response(sop: SOP) -> SOPDetailResponse:
     )
 
 
-@router.post("/", response_model=SOPDetailResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=SOPDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_sop(
     sop_data: SOPCreate,
     current_user: User = Depends(get_content_creator),
@@ -65,7 +65,7 @@ async def create_sop(
     return sop_to_detail_response(sop)
 
 
-@router.get("/", response_model=List[SOPResponse])
+@router.get("", response_model=List[SOPResponse])
 async def list_sops(
     status: Optional[SOPStatus] = None,
     category: Optional[str] = None,

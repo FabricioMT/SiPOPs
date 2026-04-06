@@ -16,6 +16,7 @@ import { OnboardingDetail } from './modules/onboarding/OnboardingDetail';
 import { TUSSList } from './modules/tuss/TUSSList';
 import { UsersList } from './modules/admin/UsersList';
 import { useAuthStore } from './store/authStore';
+import { Dashboard } from './modules/dashboard/Dashboard';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -48,13 +49,7 @@ const RoleProtectedRoute = ({ children, allowedRoles }: { children: React.ReactN
   return <>{children}</>;
 };
 
-// Placeholder components
-const Dashboard = () => (
-  <Container>
-    <Title order={2}>Dashboard</Title>
-    <Text mt="md">Bem-vindo ao <strong>SiPOPs</strong> — Sistema de Instrução aos Procedimentos Operacionais Padrão. Selecione uma opção no menu lateral para começar.</Text>
-  </Container>
-);
+
 
 const Chat = () => (
   <Container>
@@ -92,7 +87,7 @@ function App() {
           <Route index element={<Dashboard />} />
 
           {/* Setores e Guias SPDATA */}
-          <Route path="secretaria-ue-sus" element={
+          <Route path="ue-sus" element={
             <RoleProtectedRoute allowedRoles={['admin', 'gestor', 'sec_ue_sus']}>
               <Outlet />
             </RoleProtectedRoute>
@@ -102,7 +97,7 @@ function App() {
                 title="Secretaria Urgência e Emergência SUS"
                 description="Guia de uso do sistema para o setor de Urgência/Emergência"
                 sector="ue_sus"
-                basePath="/secretaria-ue-sus"
+                basePath="/ue-sus"
                 icon={<AlertCircle size={28} />}
                 color="red"
               />
@@ -112,14 +107,17 @@ function App() {
                 <GuidesList
                   sectorLabel="Urgência/Emergência SUS"
                   sectorKey="ue_sus"
-                  basePath="/secretaria-ue-sus"
+                  basePath="/ue-sus"
                   sectorColor="red"
                 />
               } />
+              <Route path="health-plans" element={<HealthPlanList />} />
+              <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+              <Route path="health-plans/:id/guide/:protocolType" element={<HealthPlanGuide />} />
             </Route>
           </Route>
 
-          <Route path="secretaria-pa" element={
+          <Route path="pa" element={
             <RoleProtectedRoute allowedRoles={['admin', 'gestor', 'sec_pa']}>
               <Outlet />
             </RoleProtectedRoute>
@@ -129,7 +127,7 @@ function App() {
                 title="Secretaria Pronto Atendimento"
                 description="Guia de uso do sistema para o setor de Pronto Atendimento"
                 sector="pa"
-                basePath="/secretaria-pa"
+                basePath="/pa"
                 icon={<Activity size={28} />}
                 color="blue"
               />
@@ -139,7 +137,7 @@ function App() {
                 <GuidesList
                   sectorLabel="Pronto Atendimento"
                   sectorKey="pa"
-                  basePath="/secretaria-pa"
+                  basePath="/pa"
                   sectorColor="blue"
                 />
               } />
@@ -149,7 +147,7 @@ function App() {
             </Route>
           </Route>
 
-          <Route path="secretaria-portaria" element={
+          <Route path="portaria" element={
             <RoleProtectedRoute allowedRoles={['admin', 'gestor', 'sec_portaria']}>
               <Outlet />
             </RoleProtectedRoute>
@@ -159,7 +157,7 @@ function App() {
                 title="Secretaria Portaria Principal"
                 description="Guia de uso do sistema para o setor da Portaria"
                 sector="portaria"
-                basePath="/secretaria-portaria"
+                basePath="/portaria"
                 icon={<DoorOpen size={28} />}
                 color="teal"
               />
@@ -169,7 +167,7 @@ function App() {
                 <GuidesList
                   sectorLabel="Portaria Principal"
                   sectorKey="portaria"
-                  basePath="/secretaria-portaria"
+                  basePath="/portaria"
                   sectorColor="teal"
                 />
               } />
@@ -185,6 +183,10 @@ function App() {
           <Route path="tuss" element={<TUSSList />} />
           <Route path="users" element={<UsersList />} />
           <Route path="chat" element={<Chat />} />
+
+          {/* Shared Health Plan Routes (accessible from anywhere, like Onboarding) */}
+          <Route path="health-plans/:id" element={<HealthPlanDetail />} />
+          <Route path="health-plans/:id/guide/:protocolType" element={<HealthPlanGuide />} />
         </Route>
       </Routes>
     </BrowserRouter>

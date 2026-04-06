@@ -17,7 +17,7 @@ from app.modules.onboarding import service
 router = APIRouter(prefix="/playlists", tags=["onboarding"])
 
 
-@router.post("/", response_model=PlaylistResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PlaylistResponse, status_code=status.HTTP_201_CREATED)
 async def create_playlist(
     playlist_data: PlaylistCreate,
     current_user: User = Depends(get_content_creator),
@@ -31,7 +31,7 @@ async def create_playlist(
     return playlist
 
 
-@router.get("/", response_model=List[PlaylistResponse])
+@router.get("", response_model=List[PlaylistResponse])
 async def list_playlists(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),

@@ -38,7 +38,7 @@ export const OnboardingDetail = () => {
 
   const items = [
     { title: 'Dashboard', href: '/' },
-    { title: 'Onboarding', href: '/onboarding' },
+    { title: 'Trilhas de Capacitação', href: '/onboarding' },
     { title: playlist.title, href: '#' },
   ].map((item, index) => (
     <Anchor href={item.href} key={index} onClick={(e) => {

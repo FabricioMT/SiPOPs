@@ -28,9 +28,9 @@ export const OnboardingList = () => {
     <Container size="lg" py="xl">
       <Stack gap="xl">
         <Stack gap="xs">
-          <Title order={1} c="mediBlue">Onboarding & Trilhas</Title>
+          <Title order={1} c="mediBlue">Trilhas de Capacitação</Title>
           <Text c="dimmed">
-            Acompanhe seu progresso nas trilhas de capacitação e procedimentos obrigatórios.
+            Acompanhe seu progresso nas trilhas de treinamento e procedimentos obrigatórios.
           </Text>
         </Stack>
 

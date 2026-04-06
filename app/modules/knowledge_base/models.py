@@ -24,6 +24,7 @@ class HealthPlan(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     logo_path: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    external_portal_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
     
     # Relationships

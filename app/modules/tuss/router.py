@@ -7,7 +7,7 @@ from app.modules.tuss import service, schemas
 
 router = APIRouter(prefix="/tuss", tags=["tuss"])
 
-@router.get("/", response_model=List[schemas.TUSSCodeRead])
+@router.get("", response_model=List[schemas.TUSSCodeRead])
 async def list_tuss_codes(
     q: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100),

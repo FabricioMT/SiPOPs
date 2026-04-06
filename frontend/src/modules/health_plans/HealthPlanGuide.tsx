@@ -32,6 +32,7 @@ interface HealthPlan {
   id: number;
   name: string;
   logo_path: string | null;
+  external_portal_url: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -184,17 +185,36 @@ export function HealthPlanGuide() {
   const queryClient = useQueryClient();
 
   // Derive path info
-  const pathParts = location.pathname.split('/');
-  const sectorPath = pathParts[1];
-  const patientTypePath = pathParts[2];
-  const baseSectorPath = `/${sectorPath}/${patientTypePath}`;
-  const basePlansPath = `${baseSectorPath}/health-plans`;
-  const backPath = `${basePlansPath}/${id}`;
+  const getPathInfo = () => {
+    const parts = location.pathname.split('/');
+    const sectorPath = parts[1] || '';
+    const isSectorPath = ['ue-sus', 'pa', 'portaria'].includes(sectorPath);
 
-  const humanPatientType = patientTypePath === 'externo' ? 'Externo' : 'Interno';
-  let sectorName = 'Setor';
-  if (sectorPath?.includes('pa')) sectorName = 'Pronto Atendimento';
-  else if (sectorPath?.includes('portaria')) sectorName = 'Portaria';
+    if (!isSectorPath) {
+      return {
+        sectorName: null,
+        humanPatientType: protocolType === 'externo' ? 'Externo' : 'Interno',
+        baseSectorPath: '/onboarding',
+        basePlansPath: '/onboarding',
+        backPath: `/health-plans/${id}`,
+      };
+    }
+
+    const patientTypePath = parts[2];
+    const baseSectorPath = `/${sectorPath}/${patientTypePath}`;
+    const basePlansPath = `${baseSectorPath}/health-plans`;
+    const backPath = `${basePlansPath}/${id}`;
+
+    const humanPatientType = patientTypePath === 'externo' ? 'Externo' : 'Interno';
+    let sectorName = 'Setor';
+    if (sectorPath === 'pa') sectorName = 'Pronto Atendimento';
+    else if (sectorPath === 'portaria') sectorName = 'Portaria';
+    else if (sectorPath === 'ue-sus') sectorName = 'Urgência/Emergência SUS';
+
+    return { sectorName, humanPatientType, baseSectorPath, basePlansPath, backPath };
+  };
+
+  const { sectorName, humanPatientType, baseSectorPath, basePlansPath, backPath } = getPathInfo();
 
   // Fetch plan info
   const { data: plan, isLoading: isLoadingPlan } = useQuery<HealthPlan>({
@@ -216,7 +236,7 @@ export function HealthPlanGuide() {
     enabled: !!id,
   });
 
-  const protocol = protocols?.find(p => p.patient_type === (protocolType ?? patientTypePath));
+  const protocol = protocols?.find(p => p.patient_type === (protocolType ?? (location.pathname.split('/')[2] === 'externo' || location.pathname.split('/')[2] === 'interno' ? location.pathname.split('/')[2] : 'externo')));
   const steps = parseSteps(protocol?.content ?? null);
 
   const isLoading = isLoadingPlan || isLoadingProtocols;
@@ -250,13 +270,22 @@ export function HealthPlanGuide() {
     : null;
 
   // Breadcrumbs
-  const breadcrumbs = [
-    { title: sectorName, href: `/${sectorPath}` },
-    { title: humanPatientType, href: baseSectorPath },
-    { title: 'Convênios', href: basePlansPath },
-    { title: plan?.name ?? '...', href: backPath },
-    { title: 'Guia de Treinamento', href: '#' },
-  ].map((item, i) => (
+  const breadcrumbItems = [
+    { title: 'Dashboard', href: '/' },
+  ];
+
+  if (sectorName) {
+    breadcrumbItems.push({ title: sectorName, href: `/${location.pathname.split('/')[1]}` });
+    breadcrumbItems.push({ title: humanPatientType, href: baseSectorPath });
+    breadcrumbItems.push({ title: 'Convênios', href: basePlansPath });
+  } else {
+    breadcrumbItems.push({ title: 'Trilhas de Capacitação', href: '/onboarding' });
+  }
+
+  breadcrumbItems.push({ title: plan?.name ?? '...', href: backPath });
+  breadcrumbItems.push({ title: 'Guia de Treinamento', href: '#' });
+
+  const breadcrumbs = breadcrumbItems.map((item, i) => (
     <Anchor
       key={i}
       href={item.href}
@@ -421,16 +450,18 @@ export function HealthPlanGuide() {
               >
                 Voltar ao plano
               </Button>
-              <Button
-                variant="filled"
-                rightSection={<ExternalLink size={14} />}
-                component="a"
-                href={`http://srv2.unimedvc.coop.br:8082/`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Acessar sistema Unimed
-              </Button>
+              {plan?.external_portal_url && (
+                <Button
+                  variant="filled"
+                  rightSection={<ExternalLink size={14} />}
+                  component="a"
+                  href={plan.external_portal_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Acessar sistema {plan.name}
+                </Button>
+              )}
             </Group>
 
             {/* ── Acknowledgment Button ── */}

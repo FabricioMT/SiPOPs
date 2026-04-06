@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Container, Title, Text, Stack, Paper, Group, ThemeIcon, Button, 
+import {
+  Container, Title, Text, Stack, Paper, Group, ThemeIcon, Button,
   Breadcrumbs, Anchor, Center, Loader, Divider, Alert, Badge,
   ActionIcon, Tooltip
 } from '@mantine/core';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, BookOpen, Info, Pencil } from 'lucide-react';
 import apiClient from '../../api/client';
 import { useAuthStore } from '../../store/authStore';
@@ -33,7 +33,6 @@ const PATIENT_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 
 export const GuidesList = ({ sectorLabel, sectorKey, basePath, sectorColor }: GuidesListProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuthStore();
   const { patientType } = useParams<{ patientType: string }>();
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
@@ -92,13 +91,13 @@ export const GuidesList = ({ sectorLabel, sectorKey, basePath, sectorColor }: Gu
                 <Text fw={700} c="blue">Protocolos de Convênios</Text>
                 <Text size="sm" c="dimmed">Acesse as instruções específicas de cada plano de saúde para {typeInfo.label.toLowerCase()}.</Text>
               </Stack>
-              <Button 
-                variant="filled" 
-                color="blue" 
+              <Button
+                variant="filled"
+                color="blue"
                 leftSection={<BookOpen size={16} />}
-                onClick={() => navigate(`${location.pathname}/health-plans`)}
+                onClick={() => navigate(`/${sectorKey}/${patientType}/health-plans`)}
               >
-                Ver Convênios
+                Ver Guias
               </Button>
             </Group>
           </Paper>
@@ -118,9 +117,9 @@ export const GuidesList = ({ sectorLabel, sectorKey, basePath, sectorColor }: Gu
               <Paper key={guide.id} withBorder radius="md" p="lg" shadow="sm" style={{ position: 'relative' }}>
                 {isAdminOrGestor && (
                   <Tooltip label="Editar este passo">
-                    <ActionIcon 
-                      variant="subtle" 
-                      color="gray" 
+                    <ActionIcon
+                      variant="subtle"
+                      color="gray"
                       style={{ position: 'absolute', top: 10, right: 10 }}
                       onClick={() => {
                         setSelectedGuide(guide);
@@ -131,7 +130,7 @@ export const GuidesList = ({ sectorLabel, sectorKey, basePath, sectorColor }: Gu
                     </ActionIcon>
                   </Tooltip>
                 )}
-                
+
                 <Group gap="md" align="flex-start">
                   <ThemeIcon size={40} radius="md" color={typeInfo.color} variant="light">
                     <BookOpen size={20} />
@@ -154,10 +153,10 @@ export const GuidesList = ({ sectorLabel, sectorKey, basePath, sectorColor }: Gu
         )}
       </Stack>
 
-      <GuideEditModal 
-        opened={editOpened} 
-        onClose={closeEdit} 
-        guide={selectedGuide} 
+      <GuideEditModal
+        opened={editOpened}
+        onClose={closeEdit}
+        guide={selectedGuide}
       />
     </Container>
   );

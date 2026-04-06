@@ -13,7 +13,7 @@ router = APIRouter(prefix="/spdata-guides", tags=["spdata-guides"])
 from app.core.dependencies import require_admin_or_gestor
 from app.modules.auth.models import UserRole
 
-@router.get("/", response_model=List[schemas.SPDATAGuideRead])
+@router.get("", response_model=List[schemas.SPDATAGuideRead])
 async def list_guides(
     sector: Optional[SectorType] = None,
     patient_type: Optional[PatientType] = None,

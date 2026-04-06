@@ -158,6 +158,83 @@ UNIMED_EXTERNO_GUIDE = [
 ]
 
 
+# ─── Guia IPSEMG Externo ──────────────────────────────────────────────────────
+
+IPSEMG_EXTERNO_GUIDE = [
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsemg/step-1.jpeg",
+        "instructions": [
+            "Acesse o sistema IPSEMG: http://safe.ipsemg.mg.gov.br/safe/",
+            "Realize o login com as credenciais: Usuário e Senha fornecidos."
+        ]
+    },
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsemg/step-2.jpeg",
+        "instructions": [
+            "No menu lateral, clique na opção 'Execução de Procedimento'."
+        ]
+    },
+    {
+        "section": "Preenchimento da Execução",
+        "image": "/img/guides/ipsemg/step-3.jpeg",
+        "instructions": [
+            "Verifique se a tela de 'Execução de Procedimento' está com os campos vazios para iniciar o preenchimento."
+        ]
+    },
+    {
+        "section": "Preenchimento da Execução",
+        "image": "/img/guides/ipsemg/step-4.jpeg",
+        "instructions": [
+            "PASSO 4 — No bloco 'Execução de Procedimento', selecione a opção 'Urgencia/Emergencia'."
+        ]
+    },
+    {
+        "section": "Preenchimento da Execução",
+        "image": "/img/guides/ipsemg/step-5.jpeg",
+        "instructions": [
+            "PASSO 5 — No bloco 'Beneficiario', insira o número do cartão do paciente.",
+            "Preencha a 'Via do Cartão' como '01' (Padrão).",
+            "⚠️ Obs: Caso a via '01' falhe, tente a '02'."
+        ]
+    },
+    {
+        "section": "Preenchimento da Execução",
+        "image": "/img/guides/ipsemg/step-6.jpeg",
+        "instructions": [
+            "PASSO 6 — No bloco 'Profissional Executante/Solicitante', insira o CRM do médico solicitante.",
+            "Certifique-se de que o 'Tipo do Conselho' esteja selecionado como 'CRM'."
+        ]
+    },
+    {
+        "section": "Preenchimento da Execução",
+        "image": "/img/guides/ipsemg/step-7.jpeg",
+        "instructions": [
+            "PASSO 7 — No bloco 'Procedimentos', insira o código TUSS do ambiente/exame.",
+            "Consulte a Tabela TUSS do MediCore caso tenha dúvidas sobre o código correto."
+        ]
+    },
+    {
+        "section": "Confirmação e Impressão",
+        "image": "/img/guides/ipsemg/step-8.jpeg",
+        "instructions": [
+            "PASSO 8 — Clique no botão 'Executar' na parte inferior da tela.",
+            "Uma nova aba abrirá com o PDF da autorização.",
+            "Imprima o documento e solicite a assinatura do beneficiário.",
+            "📌 Caso seja acompanhante: solicitar assinatura por extenso, CPF e parentesco."
+        ]
+    },
+    {
+        "section": "Exemplo Final",
+        "image": "/img/guides/ipsemg/step-9.jpeg",
+        "instructions": [
+            "Confira este exemplo de página preenchida corretamente para garantir que nada foi esquecido."
+        ]
+    }
+]
+
+
 async def seed_data():
     print("🚀 Semeadura V5 — Trilhas de Treinamento de Planos de Saúde")
     print("=" * 60)
@@ -192,23 +269,23 @@ async def seed_data():
         # ── 2. Planos de Saúde ────────────────────────────────────────────────
         print("🏥 Criando planos de saúde (Convênios)...")
         plans_data = [
-            {"name": "UNIMED",        "logo": "/img/unimed94.png"},
-            {"name": "IPSEMG",        "logo": "/img/ipsemg94.png"},
-            {"name": "CASSI",         "logo": "/img/cassi94.png"},
-            {"name": "ABRAMGE",       "logo": "/img/abramge94.png"},
-            {"name": "AMAGIS",        "logo": "/img/amagis94.png"},
-            {"name": "COPASS",        "logo": "/img/copass94.png"},
-            {"name": "IPSM",          "logo": "/img/ipsm94.png"},
-            {"name": "POSTAL SAÚDE",  "logo": "/img/postalsaude94.png"},
-            {"name": "RENAL",         "logo": "/img/renal94.png"},
-            {"name": "SEPASI",        "logo": "/img/sepasi94.png"},
-            {"name": "SICOOB",        "logo": "/img/sicoob94.png"},
-            {"name": "S.U.S.",        "logo": "/img/sus94.png"},
-            {"name": "PARTICULAR",    "logo": "/img/plancel94.png"},
+            {"name": "UNIMED",        "logo": "/img/unimed94.png", "portal": "http://srv2.unimedvc.coop.br:8082/"},
+            {"name": "IPSEMG",        "logo": "/img/ipsemg94.png", "portal": "http://safe.ipsemg.mg.gov.br/safe/"},
+            {"name": "CASSI",         "logo": "/img/cassi94.png", "portal": None},
+            {"name": "ABRAMGE",       "logo": "/img/abramge94.png", "portal": None},
+            {"name": "AMAGIS",        "logo": "/img/amagis94.png", "portal": None},
+            {"name": "COPASS",        "logo": "/img/copass94.png", "portal": None},
+            {"name": "IPSM",          "logo": "/img/ipsm94.png", "portal": None},
+            {"name": "POSTAL SAÚDE",  "logo": "/img/postalsaude94.png", "portal": None},
+            {"name": "RENAL",         "logo": "/img/renal94.png", "portal": None},
+            {"name": "SEPASI",        "logo": "/img/sepasi94.png", "portal": None},
+            {"name": "SICOOB",        "logo": "/img/sicoob94.png", "portal": None},
+            {"name": "S.U.S.",        "logo": "/img/sus94.png", "portal": None},
+            {"name": "PARTICULAR",    "logo": "/img/plancel94.png", "portal": None},
         ]
         created_plans = {}
         for p in plans_data:
-            plan = HealthPlan(name=p["name"], logo_path=p["logo"])
+            plan = HealthPlan(name=p["name"], logo_path=p["logo"], external_portal_url=p["portal"])
             db.add(plan)
             await db.flush()
             created_plans[p["name"]] = plan
@@ -249,7 +326,7 @@ async def seed_data():
         db.add(AttendanceProtocol(
             health_plan_id=created_plans["UNIMED"].id,
             patient_type=PatientType.EXTERNO,
-            title="Autorização de Exames e Procedimentos – Paciente Externo",
+            title="Autorização de Exames e Procedimentos UNIMED – Paciente Externo",
             content=json.dumps(UNIMED_EXTERNO_GUIDE, ensure_ascii=False),
         ))
 
@@ -270,14 +347,8 @@ async def seed_data():
         db.add(AttendanceProtocol(
             health_plan_id=created_plans["IPSEMG"].id,
             patient_type=PatientType.EXTERNO,
-            title="Protocolo IPSEMG – Ambulatorial",
-            content=json.dumps([{
-                "instructions": [
-                    "Conferir habilitação no portal GRP IPSEMG.",
-                    "A assinatura do paciente deve ser idêntica ao documento de identidade.",
-                    "O laudo médico deve estar preenchido sem rasuras."
-                ]
-            }], ensure_ascii=False),
+            title="Autorização de Exames IPSEMG – Paciente Externo",
+            content=json.dumps(IPSEMG_EXTERNO_GUIDE, ensure_ascii=False),
         ))
 
         db.add(AttendanceProtocol(
@@ -316,13 +387,13 @@ async def seed_data():
         # ── 6. Onboarding Playlists ───────────────────────────────────────────
         print("🎯 Criando trilhas de onboarding...")
         
-        # Get the admin user for 'created_by_id'
+        # Recupera o usuário admin para 'created_by_id'
         admin_res = await db.execute(select(User).where(User.email == "admin@admin.com"))
         admin_user = admin_res.scalar_one()
 
         # Create a playlist
         playlist = Playlist(
-            title="Trilha de Onboarding: Faturamento e Recepção",
+            title="Trilha de Capacitação",
             description="Procedimentos essenciais para recepção e autorização de convênios.",
             created_by_id=admin_user.id
         )
@@ -330,7 +401,6 @@ async def seed_data():
         await db.flush()
 
         # Add the Unimed Protocol to this playlist
-        # Find the protocol we just created using UNIMED health plan ID
         proto_res = await db.execute(
             select(AttendanceProtocol)
             .where(AttendanceProtocol.health_plan_id == created_plans["UNIMED"].id)
@@ -342,6 +412,20 @@ async def seed_data():
             playlist_id=playlist.id,
             protocol_id=unimed_proto.id,
             order_index=1
+        ))
+
+        # Add the IPSEMG Protocol to this playlist
+        ipsemg_res = await db.execute(
+            select(AttendanceProtocol)
+            .where(AttendanceProtocol.health_plan_id == created_plans["IPSEMG"].id)
+            .where(AttendanceProtocol.patient_type == PatientType.EXTERNO)
+        )
+        ipsemg_proto = ipsemg_res.scalar_one()
+
+        db.add(PlaylistSOP(
+            playlist_id=playlist.id,
+            protocol_id=ipsemg_proto.id,
+            order_index=2
         ))
 
         # Add a placeholder SOP as well to test mixed content
@@ -365,7 +449,7 @@ async def seed_data():
         db.add(PlaylistSOP(
             playlist_id=playlist.id,
             sop_id=sop.id,
-            order_index=2
+            order_index=3
         ))
 
         print(f"   ✅ Trilha '{playlist.title}' criada com 1 protocolo e 1 SOP")

@@ -28,6 +28,7 @@ class HealthPlanBase(BaseModel):
     """Base Health Plan schema."""
     name: str = Field(..., min_length=2, max_length=100)
     logo_path: Optional[str] = Field(None, max_length=255)
+    external_portal_url: Optional[str] = Field(None, max_length=500)
     is_active: bool = True
 
 
