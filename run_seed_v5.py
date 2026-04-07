@@ -323,6 +323,85 @@ IPSEMG_EXTERNO_GUIDE = [
 ]
 
 
+# ─── Guia IPSM Internação (Hospitalar) ───────────────────────────────────────
+
+IPSM_INTERNACAO_GUIDE = [
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsm/internacao/step-1.jpg",
+        "instructions": [
+            "Acesse o portal de saúde IPSM.",
+            "Realize o login com Usuário e Senha fornecidos pela gestão."
+        ]
+    },
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsm/internacao/step-2.jpg",
+        "instructions": [
+            "No menu principal, localize e clique na opção 'SIGAS'."
+        ]
+    },
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsm/internacao/step-3.jpg",
+        "instructions": [
+            "Dentro do sistema SIGAS, selecione 'Ficha de Internação'."
+        ]
+    },
+    {
+        "section": "Identificação da Unidade",
+        "image": "/img/guides/ipsm/internacao/step-4.jpg",
+        "instructions": [
+            "Insira o CNPJ do Hospital Cesar Leite: 22263081000155",
+            "Clique em 'Continuar' para validar a unidade prestadora."
+        ]
+    },
+    {
+        "section": "Dados do Beneficiário",
+        "image": "/img/guides/ipsm/internacao/step-5.jpg",
+        "instructions": [
+            "Preencha o número do cartão do paciente.",
+            "Dica: Clique em qualquer área branca da página para carregar os dados automaticamente.",
+            "Confira obrigatoriamente o Nome e a Data de Nascimento exibidos."
+        ]
+    },
+    {
+        "section": "Dados da Internação",
+        "image": "/img/guides/ipsm/internacao/step-6.jpg",
+        "instructions": [
+            "Regime: Preencha se é Interno, Externo ou Hospital Dia.",
+            "Tipo: Selecione entre Cirúrgico, Clínico, Obstétrico ou SADT.",
+            "Caráter: Selecione Eletivo ou Urgência.",
+            "CID: Informe o código internacional da doença.",
+            "Acomodação: Selecione 'Enfermaria' (Dica: Geralmente solicitam-se 3 diárias iniciais)."
+        ]
+    },
+    {
+        "section": "Médico Solicitante",
+        "image": "/img/guides/ipsm/internacao/step-7.jpg",
+        "instructions": [
+            "Preencha os campos do cabeçalho com os dados completos do Médico Solicitante."
+        ]
+    },
+    {
+        "section": "Procedimentos",
+        "image": "/img/guides/ipsm/internacao/step-8.jpg",
+        "instructions": [
+            "Digite o código do procedimento TUSS a ser autorizado.",
+            "Informe a quantidade correta conforme o pedido médico."
+        ]
+    },
+    {
+        "section": "Finalização",
+        "image": "/img/guides/ipsm/internacao/step-9.jpg",
+        "instructions": [
+            "Caso seja atendimento interno, preencha a Indicação Clínica no final da página (conforme consta na guia física).",
+            "Revise todos os campos e clique em enviar para autorização."
+        ]
+    }
+]
+
+
 async def seed_data():
     print("🚀 Semeadura V5 — Trilhas de Treinamento de Planos de Saúde")
     print("=" * 60)
@@ -366,10 +445,10 @@ async def seed_data():
         plans_data = [
             {"name": "UNIMED",        "logo": "/img/unimed94.png", "portal": "http://srv2.unimedvc.coop.br:8082/"},
             {"name": "IPSEMG",        "logo": "/img/ipsemg94.png", "portal": "http://safe.ipsemg.mg.gov.br/safe/"},
-            {"name": "CASSI",         "logo": "/img/cassi94.png", "portal": None},
+            {"name": "CASSI",         "logo": "/img/cassi94.png", "portal": "https://www.orizonbrasil.com.br/acesso-restrito.html"},
             {"name": "ABRAMGE",       "logo": "/img/abramge94.png", "portal": None},
-            {"name": "IPSM",          "logo": "/img/ipsm94.png", "portal": None},
-            {"name": "POSTAL SAÚDE",  "logo": "/img/postalsaude94.png", "portal": None},
+            {"name": "IPSM",          "logo": "/img/ipsm94.png", "portal": "http://www.sigas.ipsm.mg.gov.br/saps/portal.do"},
+            {"name": "POSTAL SAÚDE",  "logo": "/img/postalsaude94.png", "portal": "https://autorizador.postalsaudeservicos.com.br/autorizadorpro/custom/CustomLogin.aspx"},
             {"name": "SICOOB",        "logo": "/img/sicoob94.png", "portal": None},
             {"name": "S.U.S.",        "logo": "/img/sus94.png", "portal": None},
             {"name": "PARTICULAR",    "logo": "/img/plancel94.png", "portal": None},
@@ -449,6 +528,13 @@ async def seed_data():
             patient_type=PatientType.INTERNO,
             title="Internação Clínica e Cirúrgica IPSEMG",
             content=json.dumps(IPSEMG_INTERNACAO_GUIDE, ensure_ascii=False),
+        ))
+
+        db.add(AttendanceProtocol(
+            health_plan_id=created_plans["IPSM"].id,
+            patient_type=PatientType.INTERNO,
+            title="Internação Hospitalar IPSM (SIGAS)",
+            content=json.dumps(IPSM_INTERNACAO_GUIDE, ensure_ascii=False),
         ))
 
         db.add(AttendanceProtocol(
