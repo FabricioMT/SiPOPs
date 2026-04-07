@@ -69,12 +69,12 @@ export const onboardingApi = {
     return response.data;
   },
 
-  updateUser: async (userId: number, data: Partial<UserResponse>) => {
+  updateUser: async (userId: number, data: Partial<UserResponse> & { password?: string }) => {
     const response = await apiClient.patch<UserResponse>(`/auth/users/${userId}`, data);
     return response.data;
   },
 
-  createUser: async (data: { email: string; full_name: string; role: string }) => {
+  createUser: async (data: { email: string; full_name: string; roles: string[] }) => {
     const response = await apiClient.post<UserResponse & { plain_password: string }>('/auth/users', data);
     return response.data;
   },
@@ -93,7 +93,7 @@ export interface UserResponse {
   id: number;
   email: string;
   full_name: string;
-  role: string;
+  roles: string[];
   is_active: boolean;
   created_at: string;
 }

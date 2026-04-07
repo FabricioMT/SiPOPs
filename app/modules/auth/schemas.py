@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Union, Any
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 
 from app.modules.auth.models import UserRole
 
@@ -12,37 +12,44 @@ class UserBase(BaseModel):
     """Base user schema with common fields."""
     email: EmailStr
     full_name: str = Field(..., min_length=2, max_length=255)
+    roles: List[UserRole] = [UserRole.COLABORADOR]
 
 
 class UserCreate(UserBase):
     """Schema for creating a new user."""
     password: str = Field(..., min_length=6, max_length=100)
-    role: UserRole = UserRole.COLABORADOR
 
 
 class UserUpdate(BaseModel):
     """Schema for updating user data."""
     full_name: Optional[str] = Field(None, min_length=2, max_length=255)
     email: Optional[EmailStr] = None
-    role: Optional[UserRole] = None
+    roles: Optional[List[UserRole]] = None
+    password: Optional[str] = Field(None, min_length=6, max_length=100)
     is_active: Optional[bool] = None
 
 
 class UserResponse(UserBase):
     """Schema for user response."""
     id: int
-    role: UserRole
     is_active: bool
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("roles", mode="before")
+    @classmethod
+    def transform_roles(cls, v):
+        # If it's a list of UserRoleLink objects, extract the enums
+        if isinstance(v, list) and len(v) > 0 and hasattr(v[0], 'role'):
+            return [r.role for r in v]
+        return v
 
 
 class UserAdminCreate(UserBase):
     """Schema for admin to create a user (no password sent)."""
-    role: UserRole = UserRole.COLABORADOR
+    pass
 
 
 class UserAdminResponse(UserResponse):

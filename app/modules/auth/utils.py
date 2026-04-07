@@ -52,7 +52,7 @@ def send_reset_password_email(email: str, token: str):
     print("\n" + "="*50)
     print("📧 MOCK EMAIL DISPATCHER")
     print(f"To: {email}")
-    print("Subject: Recuperação de Senha - MediCore")
+    print("Subject: Recuperação de Senha - SiPOPs")
     print("-" * 50)
     print("Você solicitou a recuperação da sua senha.")
     print("Clique no link abaixo para criar uma nova senha:")

@@ -21,7 +21,7 @@ from app.core.database import async_session_maker, Base, engine
 from app.core.security import get_password_hash
 
 # Importar modelos diretamente (bypassando __init__ que carrega os routers)
-from app.modules.auth.models import User, UserRole
+from app.modules.auth.models import User, UserRole, UserRoleLink
 from app.modules.tuss.models import TUSSCode
 
 # Importar modelos do knowledge_base diretamente
@@ -151,8 +151,96 @@ UNIMED_EXTERNO_GUIDE = [
             "Revise todos os campos preenchidos.",
             "Clique em 'Solicitar Autorização' para concluir o processo.",
             "Caso autorizado, clique em 'Imprimir' para gerar a guia TISS.",
-            "Solicitar a assinatura do paciente na guia TISS e o carimbo do médico.",
-            "✅ Anote o número de autorização gerado para registro no sistema SPDATA."
+            "Solicitar a assinatura do paciente na guia TISS e o carimbo do médico."
+        ]
+    }
+]
+
+
+# ─── Guia IPSEMG Internação (Hospitalar) ──────────────────────────────────────
+
+IPSEMG_INTERNACAO_GUIDE = [
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsemg/internacao/step-1.jpeg",
+        "instructions": [
+            "Acesse o sistema IPSEMG: http://safe.ipsemg.mg.gov.br/safe/",
+            "Realize o login com Usuário e Senha fornecidos.",
+            "⚠️ OBS SUPER IMPORTANTE: ESCANEAR A GUIA DE INTERNAÇÃO DO IPSEMG ANTES DE INICIAR O PREENCHIMENTO NO SISTEMA, POIS O SISTEMA PODE PERDER O TOKEN VALIDADE LOGIN DE 15 MINUTOS DURANTE O PREENCHIMENTO."
+        ]
+    },
+    {
+        "section": "Primeiros Passos",
+        "image": "/img/guides/ipsemg/internacao/step-2.jpeg",
+        "instructions": [
+            "No menu lateral, clique na opção 'Solicitar Internação'."
+        ]
+    },
+    {
+        "section": "Dados da Internação",
+        "image": "/img/guides/ipsemg/internacao/step-3.jpeg",
+        "instructions": [
+            "Tipo de Atendimento: Preencher se é Eletivo ou Urgência.",
+            "Data do Pedido Médico: Inserir a data correta.",
+            "Indicar se é Internação Clínica ou Cirúrgica.",
+            "CID: Inserir o código da doença (Dica: Pesquisar no Google se necessário).",
+            "Matrícula: Inserir o número que consta no cartão do convênio."
+        ]
+    },
+    {
+        "section": "Dados Médicos e Hospitalares",
+        "image": "/img/guides/ipsemg/internacao/step-4.jpeg",
+        "instructions": [
+            "Preencher os Dados do Médico Solicitante.",
+            "Hipótese Diagnóstica: Transcrever a indicação clínica preenchida pelo médico na guia."
+        ]
+    },
+    {
+        "section": "Dados Médicos e Hospitalares",
+        "image": "/img/guides/ipsemg/internacao/step-5.jpeg",
+        "instructions": [
+            "Especialidade do médico solicitante.",
+            "Contato: Inserir os dados do hospital (Nome, Telefone, Endereço) conforme o seu setor de atuação."
+        ]
+    },
+    {
+        "section": "Dados Médicos e Hospitalares",
+        "image": "/img/guides/ipsemg/internacao/step-6.jpeg",
+        "instructions": [
+            "Repita a Hipótese Diagnóstica ou informe observações clínicas relevantes."
+        ]
+    },
+    {
+        "section": "Anexos",
+        "image": "/img/guides/ipsemg/internacao/step-7.jpeg",
+        "instructions": [
+            "Anexar Arquivos: Faça o upload dos documentos escaneados.",
+            "Documentos obrigatórios: Guia preenchida.",
+            "Documentos complementares: Exames de imagem, exames laboratoriais e relatório médico (caso existam)."
+        ]
+    },
+    {
+        "section": "Procedimentos",
+        "image": "/img/guides/ipsemg/internacao/step-8.jpeg",
+        "instructions": [
+            "Digitar os códigos do procedimento solicitado pelo médico.",
+            "📌 Para Internação Clínica, utilize o código: 16000010."
+        ]
+    },
+    {
+        "section": "Finalização",
+        "image": "/img/guides/ipsemg/internacao/step-9.jpg",
+        "instructions": [
+            "Revise as informações.",
+            "Clique em 'Executar' no topo da página para enviar a solicitação."
+        ]
+    },
+    {
+        "section": "Finalização",
+        "image": "/img/guides/ipsemg/internacao/step-10.jpeg",
+        "instructions": [
+            "Imagem da guia autorizada.",
+            "Imprimir e anexar a guia de internação a ser entregue à central de guias."
         ]
     }
 ]
@@ -212,7 +300,7 @@ IPSEMG_EXTERNO_GUIDE = [
         "image": "/img/guides/ipsemg/step-7.jpeg",
         "instructions": [
             "PASSO 7 — No bloco 'Procedimentos', insira o código TUSS do ambiente/exame.",
-            "Consulte a Tabela TUSS do MediCore caso tenha dúvidas sobre o código correto."
+            "Consulte a Tabela TUSS do SiPOPs caso tenha dúvidas sobre o código correto."
         ]
     },
     {
@@ -249,22 +337,29 @@ async def seed_data():
         # ── 1. Usuários ───────────────────────────────────────────────────────
         print("👤 Criando usuários de teste...")
         users_data = [
-            {"email": "admin@admin.com", "pass": "admin123", "name": "Administrador Master", "role": UserRole.ADMIN},
-            {"email": "gestor@admin.com", "pass": "gestor123", "name": "Gestor de Equipe", "role": UserRole.GESTOR},
-            {"email": "pa@pa.com", "pass": "pa123456", "name": "Secretária P.A.", "role": UserRole.SEC_PA},
-            {"email": "ue@ue.com", "pass": "ue123456", "name": "Secretária UE-SUS", "role": UserRole.SEC_UE_SUS},
-            {"email": "portaria@portaria.com", "pass": "portaria123", "name": "Portaria Principal", "role": UserRole.SEC_PORTARIA},
+            {"email": "admin@admin.com", "pass": "admin123", "name": "Administrador Master", "roles": [UserRole.ADMIN, UserRole.GESTOR]},
+            {"email": "gestor@admin.com", "pass": "gestor123", "name": "Gestor de Equipe", "roles": [UserRole.GESTOR]},
+            {"email": "pa@pa.com", "pass": "pa123456", "name": "Secretária P.A.", "roles": [UserRole.SEC_PA, UserRole.COLABORADOR]},
+            {"email": "ue@ue.com", "pass": "ue123456", "name": "Secretária UE-SUS", "roles": [UserRole.SEC_UE_SUS, UserRole.COLABORADOR]},
+            {"email": "portaria@portaria.com", "pass": "portaria123", "name": "Portaria Principal", "roles": [UserRole.SEC_PORTARIA, UserRole.COLABORADOR]},
         ]
+        
         for u in users_data:
-            db.add(User(
+            user = User(
                 email=u["email"],
                 hashed_password=get_password_hash(u["pass"]),
                 full_name=u["name"],
-                role=u["role"],
                 is_active=True
-            ))
+            )
+            db.add(user)
+            await db.flush() # Para gerar o user.id
+            
+            # Adicionar roles via UserRoleLink
+            for role_enum in u["roles"]:
+                db.add(UserRoleLink(user_id=user.id, role=role_enum))
+        
         await db.flush()
-        print(f"   ✅ {len(users_data)} usuários criados")
+        print(f"   ✅ {len(users_data)} usuários criados com múltiplas funções")
 
         # ── 2. Planos de Saúde ────────────────────────────────────────────────
         print("🏥 Criando planos de saúde (Convênios)...")
@@ -273,16 +368,14 @@ async def seed_data():
             {"name": "IPSEMG",        "logo": "/img/ipsemg94.png", "portal": "http://safe.ipsemg.mg.gov.br/safe/"},
             {"name": "CASSI",         "logo": "/img/cassi94.png", "portal": None},
             {"name": "ABRAMGE",       "logo": "/img/abramge94.png", "portal": None},
-            {"name": "AMAGIS",        "logo": "/img/amagis94.png", "portal": None},
-            {"name": "COPASS",        "logo": "/img/copass94.png", "portal": None},
             {"name": "IPSM",          "logo": "/img/ipsm94.png", "portal": None},
             {"name": "POSTAL SAÚDE",  "logo": "/img/postalsaude94.png", "portal": None},
-            {"name": "RENAL",         "logo": "/img/renal94.png", "portal": None},
-            {"name": "SEPASI",        "logo": "/img/sepasi94.png", "portal": None},
             {"name": "SICOOB",        "logo": "/img/sicoob94.png", "portal": None},
             {"name": "S.U.S.",        "logo": "/img/sus94.png", "portal": None},
             {"name": "PARTICULAR",    "logo": "/img/plancel94.png", "portal": None},
+            {"name": "PARTICULAR TOTAL",    "logo": "/img/plancel94.png", "portal": None},
         ]
+        
         created_plans = {}
         for p in plans_data:
             plan = HealthPlan(name=p["name"], logo_path=p["logo"], external_portal_url=p["portal"])
@@ -349,6 +442,13 @@ async def seed_data():
             patient_type=PatientType.EXTERNO,
             title="Autorização de Exames IPSEMG – Paciente Externo",
             content=json.dumps(IPSEMG_EXTERNO_GUIDE, ensure_ascii=False),
+        ))
+
+        db.add(AttendanceProtocol(
+            health_plan_id=created_plans["IPSEMG"].id,
+            patient_type=PatientType.INTERNO,
+            title="Internação Clínica e Cirúrgica IPSEMG",
+            content=json.dumps(IPSEMG_INTERNACAO_GUIDE, ensure_ascii=False),
         ))
 
         db.add(AttendanceProtocol(
@@ -461,7 +561,8 @@ async def seed_data():
     print()
     print("📌 Credenciais de acesso:")
     for u in users_data:
-        print(f"   {u['role'].value:20s} → {u['email']} / {u['pass']}")
+        roles_str = ", ".join([r.value for r in u["roles"]])
+        print(f"   {roles_str:25s} → {u['email']} / {u['pass']}")
 
 
 if __name__ == "__main__":

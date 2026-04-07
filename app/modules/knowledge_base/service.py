@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.modules.auth.models import User
-from app.modules.knowledge_base.models import HealthPlan, SOP, SOPVersion, SOPReading, SOPStatus
+from app.modules.knowledge_base.models import HealthPlan, SOP, SOPVersion, SOPReading, SOPStatus, AttendanceProtocol, PatientType
 from app.modules.knowledge_base.schemas import SOPCreate, SOPUpdate
 
 
@@ -290,3 +290,70 @@ async def get_health_plan_sops(db: AsyncSession, plan_id: int) -> List[SOP]:
         .order_by(SOP.title.asc())
     )
     return list(result.scalars().all())
+
+
+async def search_global(
+    db: AsyncSession,
+    query: str,
+    limit: int = 20
+) -> List[dict]:
+    """
+    Search across SOPs and Attendance Protocols.
+    Returns a standardized list of results.
+    """
+    search_pattern = f"%{query}%"
+    results = []
+
+    # 1. Search SOPs
+    sop_stmt = (
+        select(SOP)
+        .options(selectinload(SOP.versions))
+        .outerjoin(SOPVersion)
+        .where(
+            or_(
+                SOP.title.ilike(search_pattern),
+                SOPVersion.content.ilike(search_pattern)
+            )
+        )
+        .distinct()
+        .limit(limit)
+    )
+    sop_res = await db.execute(sop_stmt)
+    for sop in sop_res.scalars().all():
+        results.append({
+            "id": sop.id,
+            "value": sop.title,
+            "type": "sop",
+            "category": sop.category or "Geral",
+            "metadata": {}
+        })
+
+    # 2. Search Attendance Protocols
+    protocol_stmt = (
+        select(AttendanceProtocol)
+        .join(HealthPlan)
+        .options(selectinload(AttendanceProtocol.health_plan))
+        .where(
+            or_(
+                AttendanceProtocol.title.ilike(search_pattern),
+                AttendanceProtocol.content.ilike(search_pattern),
+                HealthPlan.name.ilike(search_pattern)
+            )
+        )
+        .limit(limit)
+    )
+    protocol_res = await db.execute(protocol_stmt)
+    for proto in protocol_res.scalars().all():
+        results.append({
+            "id": proto.id,
+            "value": proto.title,
+            "type": "protocol",
+            "category": f"Guia: {proto.health_plan.name}",
+            "metadata": {
+                "health_plan_id": proto.health_plan_id,
+                "patient_type": proto.patient_type
+            }
+        })
+
+    # Return combined list limited by global limit
+    return results[:limit]

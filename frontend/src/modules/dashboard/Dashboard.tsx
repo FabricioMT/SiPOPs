@@ -64,15 +64,15 @@ export const Dashboard = () => {
                     <BookOpen size={20} />
                   </ThemeIcon>
                 </Group>
-                <Title order={3} mb={10}>Abertura de Faturamento</Title>
+                <Title order={3} mb={10}>Normas de Atendimento Geral</Title>
                 <Text size="sm" c="dimmed" lineClamp={2}>
                   Protocolo essencial para o início do processo de internação e faturamento hospitalar.
                 </Text>
               </Box>
-              <Button 
-                variant="filled" 
-                color="mediBlue" 
-                radius="md" 
+              <Button
+                variant="filled"
+                color="mediBlue"
+                radius="md"
                 onClick={() => navigate('/sops/1')}
                 rightSection={<ArrowRight size={16} />}
               >
@@ -88,7 +88,7 @@ export const Dashboard = () => {
                 <Title order={3}>Sua Capacitação</Title>
                 <Trophy size={28} color="var(--mantine-color-yellow-6)" />
               </Group>
-              
+
               {mainTrack ? (
                 <Stack gap="xs">
                   <Group justify="space-between">

@@ -105,6 +105,19 @@ async def search_sops(
     return [sop_to_response(sop) for sop in sops]
 
 
+@router.get("/global-search")
+async def global_search(
+    q: str = Query(..., min_length=2),
+    limit: int = Query(20, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Global search across SOPs and Health Plan Records.
+    """
+    return await service.search_global(db, query=q, limit=limit)
+
+
 @router.get("/{sop_id}", response_model=SOPDetailResponse)
 async def get_sop(
     sop_id: int,

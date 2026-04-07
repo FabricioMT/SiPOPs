@@ -68,11 +68,29 @@ export const UsersList = () => {
   };
 
   const getRoleBadge = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'admin': return <Badge color="red" variant="light" leftSection={<Shield size={12} />}>Admin</Badge>;
-      case 'gestor': return <Badge color="blue" variant="light">Gestor</Badge>;
-      default: return <Badge color="gray" variant="light">Colaborador</Badge>;
-    }
+    const roleMap: Record<string, { label: string; color: string; icon?: any }> = {
+      admin: { label: 'Admin', color: 'red', icon: <Shield size={12} /> },
+      gestor: { label: 'Gestor', color: 'blue' },
+      colaborador: { label: 'Colaborador', color: 'gray' },
+      sec_ue_sus: { label: 'Sec. UE SUS', color: 'red' },
+      sec_pa: { label: 'Sec. PA', color: 'blue' },
+      sec_portaria: { label: 'Sec. Portaria', color: 'teal' },
+      sec_guias: { label: 'Sec. Guias', color: 'cyan' },
+    };
+
+    const config = roleMap[role.toLowerCase()] || { label: role, color: 'gray' };
+    
+    return (
+      <Badge 
+        key={role} 
+        color={config.color} 
+        variant="light" 
+        size="xs"
+        leftSection={config.icon}
+      >
+        {config.label}
+      </Badge>
+    );
   };
 
   return (
@@ -136,7 +154,11 @@ export const UsersList = () => {
                         </Stack>
                       </Group>
                     </Table.Td>
-                    <Table.Td>{getRoleBadge(user.role)}</Table.Td>
+                    <Table.Td>
+                      <Group gap={4}>
+                        {user.roles?.map(role => getRoleBadge(role)) || <Badge color="gray">Nenhuma</Badge>}
+                      </Group>
+                    </Table.Td>
                     <Table.Td>
                       <Badge color={user.is_active ? 'green' : 'red'} variant="dot">
                         {user.is_active ? 'Ativo' : 'Inativo'}

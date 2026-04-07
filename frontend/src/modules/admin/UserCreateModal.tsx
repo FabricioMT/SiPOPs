@@ -1,13 +1,14 @@
 import { 
-  Modal, TextInput, Select, Button, Group, Stack, LoadingOverlay, 
-  Paper, Text, Alert, CopyButton, ActionIcon, Tooltip, Divider 
+  Modal, TextInput, Button, Group, Stack, LoadingOverlay, 
+  Paper, Text, Alert, CopyButton, ActionIcon, Tooltip, Divider,
+  SimpleGrid, Checkbox
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { onboardingApi } from '../../api/onboarding';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
-import { Check, Copy, UserCheck, User } from 'lucide-react';
+import { Check, Copy, UserCheck, User, Shield } from 'lucide-react';
 
 interface UserCreateModalProps {
   opened: boolean;
@@ -22,12 +23,12 @@ export const UserCreateModal = ({ opened, onClose }: UserCreateModalProps) => {
     initialValues: {
       full_name: '',
       email: '',
-      role: 'colaborador',
+      roles: ['colaborador'] as string[],
     },
     validate: {
       full_name: (value) => (value.length < 2 ? 'Nome muito curto' : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'E-mail inválido'),
-      role: (value) => (!value ? 'Selecione um cargo' : null),
+      roles: (value) => (value.length === 0 ? 'Selecione ao menos um acesso' : null),
     },
   });
 
@@ -68,51 +69,61 @@ export const UserCreateModal = ({ opened, onClose }: UserCreateModalProps) => {
       }
       centered 
       radius="md"
-      size="md"
+      size="lg"
     >
       <div style={{ position: 'relative' }}>
         <LoadingOverlay visible={mutation.isPending} />
 
         {!createdUser ? (
           <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
-            <Stack>
+            <Stack gap="md">
               <Text size="sm" c="dimmed">
-                Preencha os dados básicos. A senha será gerada automaticamente e exibida na tela seguinte.
+                Preencha os dados básicos e defina as permissões. A senha será gerada automaticamente.
               </Text>
 
-              <TextInput
-                label="Nome Completo"
-                placeholder="Ex: João da Silva"
-                required
-                leftSection={<User size={16} strokeWidth={1.5} />}
-                {...form.getInputProps('full_name')}
-              />
+              <Group grow>
+                <TextInput
+                  label="Nome Completo"
+                  placeholder="Ex: João da Silva"
+                  required
+                  leftSection={<User size={16} strokeWidth={1.5} />}
+                  {...form.getInputProps('full_name')}
+                />
 
-              <TextInput
-                label="E-mail Corporativo"
-                placeholder="colaborador@medicore.com"
-                required
-                leftSection={<Text size="xs" fw={700} c="dimmed">@</Text>}
-                {...form.getInputProps('email')}
-              />
+                <TextInput
+                  label="E-mail Corporativo"
+                  placeholder="colaborador@medicore.com"
+                  required
+                  leftSection={<Text size="xs" fw={700} c="dimmed">@</Text>}
+                  {...form.getInputProps('email')}
+                />
+              </Group>
 
-              <Select
-                label="Permissão de Acesso"
-                placeholder="Selecione o cargo"
-                required
-                data={[
-                  { value: 'admin', label: '🛡️ Admin (Acesso Total)' },
-                  { value: 'gestor', label: '👔 Gestor (Acesso Administrativo)' },
-                  { value: 'colaborador', label: '👤 Colaborador (Geral)' },
-                  { group: 'Setores Especializados', items: [
-                    { value: 'sec_ue_sus', label: '🚨 Sec. Urgência e Emergência SUS' },
-                    { value: 'sec_pa', label: '🏥 Sec. Pronto Atendimento' },
-                    { value: 'sec_portaria', label: '🚪 Sec. Portaria Principal' },
-                    { value: 'sec_guias', label: '📋 Sec. Central de Guias' },
-                  ]},
-                ]}
-                {...form.getInputProps('role')}
-              />
+              <Paper withBorder p="md" radius="md">
+                <Stack gap="xs">
+                  <Group gap="xs">
+                    <Shield size={18} color="var(--mantine-color-blue-6)" />
+                    <Text fw={700}>Matriz de Acessos e Funções</Text>
+                  </Group>
+                  
+                  <Divider label="Administrativo e Gestão" labelPosition="center" mt="xs" />
+                  <Checkbox.Group {...form.getInputProps('roles')}>
+                    <SimpleGrid cols={3} mt="xs">
+                      <Checkbox value="admin" label="🛡️ Admin" color="red" />
+                      <Checkbox value="gestor" label="👔 Gestor" color="blue" />
+                      <Checkbox value="colaborador" label="👤 Colaborador" color="gray" />
+                    </SimpleGrid>
+
+                    <Divider label="Secretarias e Setores" labelPosition="center" mt="lg" />
+                    <SimpleGrid cols={2} mt="xs">
+                      <Checkbox value="sec_ue_sus" label="🚨 Urgência/Emergência SUS" color="red" />
+                      <Checkbox value="sec_pa" label="🏥 Pronto Atendimento" color="blue" />
+                      <Checkbox value="sec_portaria" label="🚪 Portaria Principal" color="teal" />
+                      <Checkbox value="sec_guias" label="📋 Central de Guias" color="cyan" />
+                    </SimpleGrid>
+                  </Checkbox.Group>
+                </Stack>
+              </Paper>
 
               <Group justify="flex-end" mt="xl">
                 <Button variant="subtle" onClick={handleClose}>

@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # Database - SQLite for local dev, PostgreSQL for production
-    DATABASE_URL: str = "sqlite+aiosqlite:///./medicore.db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./sipops.db"
     
     # Security
     SECRET_KEY: str = "your-super-secret-key-change-in-production"
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     
     # App
     DEBUG: bool = True
-    APP_NAME: str = "MediCore API"
+    APP_NAME: str = "SiPOPs API"
     APP_VERSION: str = "0.1.0"
     
     class Config:

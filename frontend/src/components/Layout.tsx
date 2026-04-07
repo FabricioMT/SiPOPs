@@ -1,9 +1,9 @@
-import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete, Menu, Avatar, Tooltip } from '@mantine/core';
+import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete, Menu, Avatar, Tooltip, ThemeIcon } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { 
   LayoutDashboard, ListTodo, MessageSquare, LogOut, 
   User as UserIcon, Sun, Moon, Search, Hash, Shield, Settings, ChevronDown,
-  AlertCircle, Activity, DoorOpen
+  AlertCircle, Activity, DoorOpen, BookOpen
 } from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -21,27 +21,37 @@ export function Layout() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   
   const [search, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState<{ value: string; id: number }[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (search.length >= 2) {
         try {
-          const response = await apiClient.get(`/sops/search?q=${search}`);
-          setSearchResults(response.data.map((sop: any) => ({
-            value: sop.title,
-            id: sop.id
-          })));
+          const response = await apiClient.get(`/sops/global-search?q=${search}`);
+          setSearchResults(response.data);
         } catch (error) {
           console.error("Erro na busca:", error);
         }
       } else {
         setSearchResults([]);
       }
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
+
+  const handleSearchSubmit = (val: string) => {
+    const selected = searchResults.find(r => r.value === val);
+    if (selected) {
+      if (selected.type === 'sop') {
+        navigate(`/sops/${selected.id}`);
+      } else if (selected.type === 'protocol') {
+        const { health_plan_id, patient_type } = selected.metadata;
+        navigate(`/health-plans/${health_plan_id}/guide/${patient_type}`);
+      }
+      setSearch('');
+    }
+  };
 
   // Base navigation links
   const mainLinks = [
@@ -53,9 +63,10 @@ export function Layout() {
 
   // Sector links with RBAC logic
   const sectorLinks = [];
-  const isAdminOrGestor = user?.role === 'admin' || user?.role === 'gestor';
+  const userRoles = user?.roles || [];
+  const isAdminOrGestor = userRoles.includes('admin') || userRoles.includes('gestor');
 
-  if (isAdminOrGestor || user?.role === 'sec_ue_sus') {
+  if (isAdminOrGestor || userRoles.includes('sec_ue_sus')) {
     sectorLinks.push({ 
       icon: AlertCircle, 
       label: 'Urgência/Emergência SUS', 
@@ -64,7 +75,7 @@ export function Layout() {
     });
   }
 
-  if (isAdminOrGestor || user?.role === 'sec_pa') {
+  if (isAdminOrGestor || userRoles.includes('sec_pa')) {
     sectorLinks.push({ 
       icon: Activity, 
       label: 'Pronto Atendimento', 
@@ -73,7 +84,7 @@ export function Layout() {
     });
   }
 
-  if (isAdminOrGestor || user?.role === 'sec_portaria') {
+  if (isAdminOrGestor || userRoles.includes('sec_portaria')) {
     sectorLinks.push({ 
       icon: DoorOpen, 
       label: 'Portaria Principal', 
@@ -82,9 +93,9 @@ export function Layout() {
     });
   }
 
-  // Admin specific
+  // Admin specific - Visible to both Admin and Gestor
   const adminLinks = [];
-  if (user?.role === 'admin') {
+  if (isAdminOrGestor) {
     adminLinks.push({ icon: Shield, label: 'Gestão de Equipe', path: '/users' });
   }
 
@@ -112,20 +123,38 @@ export function Layout() {
 
           {user && (
             <Autocomplete
-              placeholder="Buscar procedimento..."
+              placeholder="Buscar procedimento ou guia de convênio..."
               leftSection={<Search size={16} strokeWidth={1.5} />}
-              data={searchResults}
+              data={searchResults.map(r => ({
+                value: r.value,
+                id: r.id.toString(), // Mantine expects string for id in some contexts, but value is standard
+                type: r.type,
+                category: r.category
+              }))}
               value={search}
               onChange={setSearch}
-              onOptionSubmit={(val) => {
-                const selected = searchResults.find(r => r.value === val);
-                if (selected) {
-                  navigate(`/sops/${selected.id}`);
-                  setSearch('');
-                }
+              onOptionSubmit={handleSearchSubmit}
+              renderOption={({ option }) => {
+                const opt = option as any;
+                return (
+                  <Group gap="sm">
+                    <ThemeIcon 
+                      variant="light" 
+                      size="sm" 
+                      color={opt.type === 'sop' ? 'blue' : 'teal'}
+                    >
+                      {opt.type === 'sop' ? <BookOpen size={12} /> : <Activity size={12} />}
+                    </ThemeIcon>
+                    <Stack gap={0} flex={1}>
+                      <Text size="sm" fw={500}>{opt.value}</Text>
+                      <Text size="xs" c="dimmed">{opt.category}</Text>
+                    </Stack>
+                  </Group>
+                );
               }}
-              style={{ flex: 1, maxWidth: 400 }}
+              style={{ flex: 1, maxWidth: 450 }}
               visibleFrom="xs"
+              maxDropdownHeight={400}
             />
           )}
 
@@ -150,7 +179,12 @@ export function Layout() {
                       </Avatar>
                       <Stack gap={0} visibleFrom="sm">
                         <Text size="sm" fw={700} style={{ lineHeight: 1 }}>{user.full_name}</Text>
-                        <Text size="xs" c="dimmed">{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</Text>
+                        <Text size="xs" c="dimmed">
+                          {user.roles.length > 1 
+                            ? `${user.roles.length} Funções` 
+                            : user.roles[0]?.charAt(0).toUpperCase() + user.roles[0]?.slice(1) || 'Colaborador'
+                          }
+                        </Text>
                       </Stack>
                       <ChevronDown size={14} color="gray" />
                     </Group>

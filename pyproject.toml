@@ -1,7 +1,7 @@
 [project]
-name = "medicore-backend"
+name = "sipops-backend"
 version = "0.1.0"
-description = "MediCore Backend API"
+description = "SiPOPs Backend API"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

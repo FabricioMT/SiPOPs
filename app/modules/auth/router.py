@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
-from app.core.dependencies import get_admin_user
+from app.core.dependencies import get_admin_user, get_manager_user
 from app.modules.auth.models import User, UserRole
 from app.modules.auth.schemas import (
     UserCreate, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest, UserUpdate,
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/users", response_model=UserAdminResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_admin(
     user_data: UserAdminCreate,
-    admin_user: User = Depends(get_admin_user),
+    manager_user: User = Depends(get_manager_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -42,7 +42,7 @@ async def create_user_admin(
         id=user.id,
         email=user.email,
         full_name=user.full_name,
-        role=user.role,
+        roles=user.role_names,
         is_active=user.is_active,
         created_at=user.created_at,
         updated_at=user.updated_at,
@@ -97,9 +97,12 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(
+        subject=str(user.id), 
+        roles=[r.value for r in user.role_names]
+    )
     
-    return Token(access_token=access_token)
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @router.get("/me", response_model=UserResponse)
@@ -188,11 +191,11 @@ async def list_users(
     role: Optional[UserRole] = None,
     limit: int = 50,
     offset: int = 0,
-    admin_user: User = Depends(get_admin_user),
+    manager_user: User = Depends(get_manager_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    List all users (Admin only).
+    List all users (Admin or Gestor).
     """
     return await service.get_users(db, role=role, limit=limit, offset=offset)
 
@@ -201,11 +204,11 @@ async def list_users(
 async def update_user(
     user_id: int,
     update_data: UserUpdate,
-    admin_user: User = Depends(get_admin_user),
+    manager_user: User = Depends(get_manager_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Update a user (Admin only).
+    Update a user (Admin or Gestor).
     """
     updated_user = await service.update_user(db, user_id, update_data)
     if not updated_user:
@@ -216,11 +219,11 @@ async def update_user(
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
-    admin_user: User = Depends(get_admin_user),
+    manager_user: User = Depends(get_manager_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Delete a user (Admin only).
+    Delete a user (Admin or Gestor).
     """
     success = await service.delete_user(db, user_id)
     if not success:

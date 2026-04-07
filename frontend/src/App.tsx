@@ -42,7 +42,10 @@ const RoleProtectedRoute = ({ children, allowedRoles }: { children: React.ReactN
 
   if (isLoadingAuth) return <Center h="100vh"><Loader size="xl" /></Center>;
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  // Check if at least one of user's roles is in the allowed list
+  const hasAccess = user?.roles?.some(role => allowedRoles.includes(role));
+
+  if (!user || !hasAccess) {
     return <Navigate to="/" replace />;
   }
 
