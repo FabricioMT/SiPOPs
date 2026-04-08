@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { Title, Text, Container, Grid, Card, Progress, Group, Badge, Stack, Center, Loader, Alert } from '@mantine/core';
+import { Container, Title, Text, Paper, Group, Stack, Button, Progress, Badge, Center, Loader, Alert, Card, Grid, ThemeIcon } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { Info, BookOpen } from 'lucide-react';
+import { Info, BookOpen, Star } from 'lucide-react';
 import { onboardingApi } from '../../api/onboarding';
 
 export const OnboardingList = () => {
@@ -10,6 +10,12 @@ export const OnboardingList = () => {
   const { data: playlists, isLoading, error } = useQuery({
     queryKey: ['playlists'],
     queryFn: () => onboardingApi.getPlaylists()
+  });
+
+  const { data: allProgress } = useQuery({
+    queryKey: ['my-total-progress'],
+    queryFn: () => onboardingApi.getMyProgress(),
+    enabled: !!playlists
   });
 
   if (isLoading) return <Center h="100vh"><Loader /></Center>;
@@ -24,23 +30,111 @@ export const OnboardingList = () => {
     );
   }
 
+  const otherPlaylists = playlists?.filter(p => p.id !== 1) || [];
+
+  // Agregando progresso total real (Soma de todos os lidos / Soma de todos os totais)
+  const totals = allProgress?.reduce((acc, p) => ({
+    read: acc.read + (p.read_count || 0),
+    total: acc.total + (p.total_count || 0)
+  }), { read: 0, total: 0 }) || { read: 0, total: 0 };
+
+  const percentage = totals.total > 0 ? (totals.read / totals.total) * 100 : 0;
+
   return (
     <Container size="lg" py="xl">
       <Stack gap="xl">
-        <Stack gap="xs">
-          <Title order={1} c="sipopsGreen">Trilhas de Capacitação</Title>
-          <Text c="dimmed">
-            Acompanhe seu progresso nas trilhas de treinamento e procedimentos obrigatórios.
-          </Text>
+        <Stack gap="md">
+          <Stack gap="xs">
+            <Title order={1} c="sipopsGreen">Trilhas de Capacitação</Title>
+            <Text c="dimmed">
+              Acompanhe seu progresso nas trilhas de treinamento e procedimentos obrigatórios.
+            </Text>
+          </Stack>
+
+          {/* New Global Progress Section */}
+          <Paper withBorder p="xl" radius="lg" shadow="sm" bg="var(--mantine-color-gray-0)">
+            <Stack gap="md">
+              <Stack gap="xs">
+                <Group justify="space-between">
+                  <Text fw={700} size="lg" c="sipopsGreen">Progresso Geral da Trilha</Text>
+                  <Text fw={800} size="xl" c="sipopsGreen">{percentage.toFixed(0)}%</Text>
+                </Group>
+                <Progress 
+                  value={percentage} 
+                  size="xl" 
+                  radius="xl" 
+                  color="sipopsGreen" 
+                  striped 
+                  animated={percentage < 100} 
+                />
+              </Stack>
+
+              <Stack gap="xs" mt="xs">
+                <Text size="xs" fw={700} c="dimmed" style={{ textTransform: 'uppercase' }}>Acesso Obrigatório</Text>
+                <Paper 
+                  withBorder 
+                  p="md" 
+                  radius="md" 
+                  style={{ 
+                    cursor: 'pointer', 
+                    transition: 'border-color 0.2s ease, background-color 0.2s ease'
+                  }}
+                  onClick={() => navigate('/sops/1')}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--mantine-color-sipopsGreen-outlineHover)';
+                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-0)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--mantine-color-default-border)';
+                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-body)';
+                  }}
+                >
+                  <Group wrap="nowrap" align="center">
+                    <ThemeIcon 
+                      size="xl" 
+                      radius="xl" 
+                      variant="light" 
+                      color="sipopsGreen"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <Star size={20} fill="currentColor" />
+                    </ThemeIcon>
+                    
+                    <Stack gap={4} style={{ flexGrow: 1 }}>
+                      <Title order={5} c="sipopsGreen">Normas de Atendimento Geral</Title>
+                      <Group gap="xs">
+                        <Badge size="xs" color="gray" variant="outline">
+                          Procedimento Geral
+                        </Badge>
+                        <Badge size="xs" color="blue" variant="light">
+                          Essencial
+                        </Badge>
+                      </Group>
+                    </Stack>
+                    
+                    <Button variant="light" size="sm" color="blue">
+                      Ver Procedimento
+                    </Button>
+                  </Group>
+                </Paper>
+              </Stack>
+
+              <Text size="xs" c="dimmed" ta="right">
+                {totals.total > 0 ? `${totals.read} de ${totals.total} procedimentos totais realizados` : 'Carregando...'}
+              </Text>
+            </Stack>
+          </Paper>
         </Stack>
 
-        {!playlists || playlists.length === 0 ? (
+        <Title order={2} size="h3" mt="xl">Capacitações por Convênio</Title>
+
+        {otherPlaylists.length === 0 ? (
           <Center py="xl">
-            <Text c="dimmed">Nenhuma trilha de treinamento disponível no momento.</Text>
+            <Text c="dimmed">Nenhuma trilha complementar disponível no momento.</Text>
           </Center>
         ) : (
           <Grid>
-            {playlists.map((playlist) => (
+            {otherPlaylists.map((playlist) => (
               <Grid.Col key={playlist.id} span={{ base: 12, sm: 6, md: 4 }}>
                 <PlaylistCard playlist={playlist} onClick={() => navigate(`/onboarding/${playlist.id}`)} />
               </Grid.Col>

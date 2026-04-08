@@ -2,39 +2,26 @@ import { Container, Title, Text, SimpleGrid, Paper, Group, Stack, ThemeIcon, But
 import { BookOpen, Trophy, Activity, AlertCircle, ArrowRight, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import apiClient from '../../api/client';
 import { useAuthStore } from '../../store/authStore';
-
-interface PlaylistProgress {
-  playlist_id: number;
-  playlist_title: string;
-  percentage: number;
-  read_count: number;
-  total_count: number;
-}
+import { onboardingApi } from '../../api/onboarding';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // Fetch all playlists progress for the dashboard overview
-  const { data: playlists } = useQuery<PlaylistProgress[]>({
+  // Fetch all playlists progress for the dashboard overview using the new aggregated API
+  const { data: playlists } = useQuery({
     queryKey: ['dashboard-training-progress'],
-    queryFn: async () => {
-      const r = await apiClient.get('/playlists');
-      // For each playlist, we'd ideally have progress. 
-      // Simplified: fetch all playlists then their progress
-      const result = await Promise.all(
-        r.data.map(async (p: any) => {
-          const pr = await apiClient.get(`/playlists/${p.id}/progress`);
-          return pr.data;
-        })
-      );
-      return result;
-    },
+    queryFn: () => onboardingApi.getMyProgress(),
   });
 
-  const mainTrack = playlists?.[0]; // Usually the first one is the main track
+  // Agregando progresso total real para o Dashboard
+  const totals = playlists?.reduce((acc, p) => ({
+    read: acc.read + (p.read_count || 0),
+    total: acc.total + (p.total_count || 0)
+  }), { read: 0, total: 0 }) || { read: 0, total: 0 };
+
+  const globalPercentage = totals.total > 0 ? (totals.read / totals.total) * 100 : 0;
 
   return (
     <Container size="lg" py="xl">
@@ -81,7 +68,7 @@ export const Dashboard = () => {
             </Stack>
           </Paper>
 
-          {/* Training Track Progress Card */}
+          {/* Training Track Progress Card - Now Aggregated */}
           <Paper withBorder p="xl" radius="lg" shadow="sm">
             <Stack gap="md">
               <Group justify="space-between">
@@ -89,16 +76,24 @@ export const Dashboard = () => {
                 <Trophy size={28} color="var(--mantine-color-yellow-6)" />
               </Group>
 
-              {mainTrack ? (
+              {playlists ? (
                 <Stack gap="xs">
                   <Group justify="space-between">
-                    <Text size="sm" fw={600}>{mainTrack.playlist_title}</Text>
-                    <Text size="sm" c="dimmed">{mainTrack.percentage}%</Text>
+                    <Text size="sm" fw={600}>Progresso Geral</Text>
+                    <Text size="sm" c="dimmed">{globalPercentage.toFixed(0)}%</Text>
                   </Group>
-                  <Progress value={mainTrack.percentage} size="lg" radius="xl" color="green" striped animated />
+                  <Progress
+                    value={globalPercentage}
+                    size="lg"
+                    radius="xl"
+                    color="green"
+                    striped
+                    animated={globalPercentage < 100}
+                  />
                   <Text size="xs" c="dimmed" mt={5}>
-                    Você completou {mainTrack.read_count} de {mainTrack.total_count} itens.
+                    Você completou {totals.read} de {totals.total} itens totais.
                   </Text>
+
                   <Button variant="light" mt="xs" onClick={() => navigate('/onboarding')}>
                     Continuar Trilhas
                   </Button>

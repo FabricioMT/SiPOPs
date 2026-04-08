@@ -4,6 +4,7 @@ export interface PlaylistSOPResponse {
   sop_id: number | null;
   protocol_id: number | null;
   order_index: number;
+  image_path?: string;
   sop?: {
     id: number;
     title: string;
@@ -17,6 +18,24 @@ export interface PlaylistSOPResponse {
     patient_type: string;
     title: string;
   };
+}
+
+export interface OnboardingItem {
+  id: number;
+  title: string;
+  content: string;
+  order_index: number;
+  sector_slug: string;
+  image_path?: string;
+  protocol_id?: number;
+  sop_id?: number;
+}
+
+export interface OnboardingItemUpdate {
+  title?: string;
+  content?: string;
+  order_index?: number;
+  sector_slug?: string;
 }
 
 export interface PlaylistResponse {
@@ -57,6 +76,11 @@ export const onboardingApi = {
     return response.data;
   },
 
+  getMyProgress: async () => {
+    const response = await apiClient.get<ProgressResponse[]>('/playlists/me/progress');
+    return response.data;
+  },
+
   getUsers: async (limit = 50, offset = 0) => {
     const response = await apiClient.get<UserResponse[]>('/auth/users', {
       params: { limit, offset }
@@ -87,6 +111,37 @@ export const onboardingApi = {
     const response = await apiClient.patch(`/spdata-guides/${guideId}`, data);
     return response.data;
   },
+  
+  uploadAsset: async (itemId: number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post(`/playlists/items/${itemId}/upload-asset`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // --- Item Management ---
+  getItems: async (params: { protocol_id?: number; sop_id?: number }) => {
+    const r = await apiClient.get<OnboardingItem[]>('/playlists/items', { params });
+    return r.data;
+  },
+
+  createItem: async (data: Partial<OnboardingItem>) => {
+    const r = await apiClient.post<OnboardingItem>('/playlists/items', data);
+    return r.data;
+  },
+
+  updateItem: async (itemId: number, data: OnboardingItemUpdate) => {
+    const r = await apiClient.patch<OnboardingItem>(`/playlists/items/${itemId}`, data);
+    return r.data;
+  },
+
+  deleteItem: async (itemId: number) => {
+    await apiClient.delete(`/playlists/items/${itemId}`);
+  }
 };
 
 export interface UserResponse {

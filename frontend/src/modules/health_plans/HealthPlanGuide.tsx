@@ -2,14 +2,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Container, Title, Text, Stack, Paper, Group, ThemeIcon, Button,
   Breadcrumbs, Anchor, Center, Loader, Alert, Badge, Divider,
-  Image, Box, Card
+  Image, Box, Card,
 } from '@mantine/core';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   ChevronLeft, BookOpen, Info, CheckCircle2, AlertCircle,
-  ExternalLink, Users, UserCheck, Camera, ListChecks, ShieldCheck
+  ExternalLink, Users, UserCheck, Camera, ListChecks, ShieldCheck, Pencil, Clock
 } from 'lucide-react';
 import apiClient from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
+import { useDisclosure } from '@mantine/hooks';
+import { useState, useMemo } from 'react';
+import { GuideEditModal } from '../setores/GuideEditModal';
+import { onboardingApi } from '../../api/onboarding';
+import { useReadingTimer } from '../../hooks/useReadingTimer';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +32,7 @@ interface Protocol {
   patient_type: 'externo' | 'interno';
   images_json: string | null;
   health_plan_id: number;
+  min_reading_seconds: number;
 }
 
 interface HealthPlan {
@@ -57,10 +64,14 @@ function StepCard({
   step,
   stepNumber,
   totalSteps,
+  isAdmin,
+  onEdit,
 }: {
   step: GuideStep;
   stepNumber: number;
   totalSteps: number;
+  isAdmin?: boolean;
+  onEdit?: () => void;
 }) {
   const isLast = stepNumber === totalSteps;
 
@@ -72,6 +83,20 @@ function StepCard({
       shadow="sm"
       style={{ overflow: 'hidden', position: 'relative' }}
     >
+      {isAdmin && (
+        <Box style={{ position: 'absolute', top: 50, right: 10, zIndex: 10 }}>
+          <Button
+            variant="white"
+            size="compact-xs"
+            color="gray"
+            leftSection={<Pencil size={12} />}
+            onClick={onEdit}
+            style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+          >
+            Editar Passo
+          </Button>
+        </Box>
+      )}
       {/* Step header bar */}
       <Box
         style={{
@@ -183,6 +208,11 @@ export function HealthPlanGuide() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+  const [selectedStep, setSelectedStep] = useState<any>(null);
+
+  const isAdminOrGestor = user?.roles?.includes('admin') || user?.roles?.includes('gestor');
 
   // Derive path info
   const getPathInfo = () => {
@@ -237,9 +267,28 @@ export function HealthPlanGuide() {
   });
 
   const protocol = protocols?.find(p => p.patient_type === (protocolType ?? (location.pathname.split('/')[2] === 'externo' || location.pathname.split('/')[2] === 'interno' ? location.pathname.split('/')[2] : 'externo')));
-  const steps = parseSteps(protocol?.content ?? null);
 
-  const isLoading = isLoadingPlan || isLoadingProtocols;
+  // Fetch dynamic items for this protocol
+  const { data: dynamicItems, isLoading: isLoadingItems } = useQuery({
+    queryKey: ['protocol-items', protocol?.id],
+    queryFn: () => onboardingApi.getItems({ protocol_id: protocol!.id }),
+    enabled: !!protocol,
+  });
+
+  const steps = useMemo(() => {
+    if (dynamicItems && dynamicItems.length > 0) {
+      return dynamicItems.map(item => ({
+        id: item.id,
+        section: "", // We could add a section field to OnboardingItem if needed
+        image: item.image_path,
+        instructions: item.content ? [item.content] : [],
+        isDynamic: true
+      }));
+    }
+    return parseSteps(protocol?.content ?? null);
+  }, [protocol, dynamicItems]);
+
+  const isLoading = isLoadingPlan || isLoadingProtocols || isLoadingItems;
 
   // ── Reading status query ─────────────────────────────────────────────────
   const { data: readingStatus, isLoading: isLoadingStatus } = useQuery({
@@ -263,6 +312,11 @@ export function HealthPlanGuide() {
       queryClient.invalidateQueries({ queryKey: ['playlist-progress'] });
     },
   });
+
+  const { isReady, remainingSeconds } = useReadingTimer(
+    protocol ? `proto:${protocol.id}` : '',
+    protocol?.min_reading_seconds || 30
+  );
 
   const hasAcknowledged = readingStatus?.has_acknowledged ?? false;
   const acknowledgedAt = readingStatus?.acknowledged_at
@@ -413,6 +467,20 @@ export function HealthPlanGuide() {
                 step={step}
                 stepNumber={idx + 1}
                 totalSteps={steps.length}
+                isAdmin={isAdminOrGestor}
+                onEdit={() => {
+                  setSelectedStep({
+                    id: protocol.id,
+                    item_id: (step as any).id, // Use the real ID if it's a dynamic item
+                    protocol_id: protocol.id,
+                    title: (step as any).section || `Passo ${idx + 1}`,
+                    content: (step as any).instructions.join('\n'),
+                    order_index: idx + 1,
+                    image_path: (step as any).image,
+                    sector_slug: location.pathname.split('/')[1] || 'general'
+                  });
+                  openEdit();
+                }}
               />
             ))}
           </Stack>
@@ -506,15 +574,31 @@ export function HealthPlanGuide() {
                         deste guia de treinamento. Isso será registrado no seu progresso.
                       </Text>
                     </Stack>
+
+                    {!isReady && (
+                      <Alert
+                        icon={<Clock size={16} />}
+                        color="orange"
+                        variant="light"
+                        py="xs"
+                        style={{ width: '100%', maxWidth: 420 }}
+                      >
+                        <Text size="sm" fw={500}>
+                          Continue estudando por mais <strong>{remainingSeconds} segundos</strong> para habilitar a confirmação.
+                        </Text>
+                      </Alert>
+                    )}
+
                     <Button
                       size="lg"
-                      color="blue"
-                      leftSection={<ShieldCheck size={20} />}
+                      color={isReady ? "blue" : "gray"}
+                      leftSection={isReady ? <ShieldCheck size={20} /> : <Clock size={20} />}
                       loading={acknowledgeMutation.isPending || isLoadingStatus}
-                      onClick={() => acknowledgeMutation.mutate()}
+                      onClick={() => isReady && acknowledgeMutation.mutate()}
+                      disabled={!isReady}
                       style={{ minWidth: 280 }}
                     >
-                      ✅ Li e Estou Ciente
+                      {isReady ? "✅ Li e Estou Ciente" : "Estudo em Andamento..."}
                     </Button>
                   </>
                 )}
@@ -523,6 +607,12 @@ export function HealthPlanGuide() {
           </>
         )}
       </Stack>
+
+      <GuideEditModal
+        opened={editOpened}
+        onClose={closeEdit}
+        guide={selectedStep}
+      />
     </Container>
   );
 }
