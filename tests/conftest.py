@@ -83,10 +83,13 @@ async def admin_user(db: AsyncSession):
     user = User(
         email="admin@test.com",
         hashed_password=get_password_hash("password123"),
-        full_name="Admin Test",
-        role=UserRole.ADMIN
+        full_name="Admin Test"
     )
     db.add(user)
+    await db.flush() # Generate ID
+    
+    from app.modules.auth.models import UserRoleLink
+    db.add(UserRoleLink(user_id=user.id, role=UserRole.ADMIN))
     await db.commit()
     await db.refresh(user)
     return user
