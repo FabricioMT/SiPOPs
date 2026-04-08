@@ -127,6 +127,54 @@ async def upsert_health_plan(db, data: dict, dry_run: bool) -> HealthPlan:
     return plan
 
 
+async def upsert_playlist(db, title: str, description: str, created_by_id: int, dry_run: bool) -> Playlist:
+    """Upsert por title (UNIQUE conceitualmente para o seed)."""
+    result = await db.execute(select(Playlist).where(Playlist.title == title))
+    playlist = result.scalar_one_or_none()
+
+    if playlist is None:
+        if not dry_run:
+            playlist = Playlist(title=title, description=description, created_by_id=created_by_id)
+            db.add(playlist)
+            await db.flush()
+        _log(CREATED, "Playlist", title, dry_run)
+    else:
+        changed = playlist.description != description
+        if changed and not dry_run:
+            playlist.description = description
+        _log(UPDATED if changed else UNCHANGED, "Playlist", title, dry_run)
+
+    return playlist
+
+
+async def upsert_playlist_item(db, playlist_id: int, protocol_id: int = None, sop_id: int = None,
+                               order_index: int = 0, dry_run: bool = False):
+    """Sincroniza os itens da trilha (SOP ou Protocolo)."""
+    query = select(PlaylistSOP).where(PlaylistSOP.playlist_id == playlist_id)
+    if protocol_id:
+        query = query.where(PlaylistSOP.protocol_id == protocol_id)
+    else:
+        query = query.where(PlaylistSOP.sop_id == sop_id)
+
+    result = await db.execute(query)
+    ps = result.scalar_one_or_none()
+
+    if ps is None:
+        if not dry_run:
+            db.add(PlaylistSOP(
+                playlist_id=playlist_id,
+                protocol_id=protocol_id,
+                sop_id=sop_id,
+                order_index=order_index
+            ))
+        _log(CREATED, "PlaylistSOP", f"Trilha {playlist_id} → Item {protocol_id or sop_id}", dry_run)
+    else:
+        changed = ps.order_index != order_index
+        if changed and not dry_run:
+            ps.order_index = order_index
+        _log(UPDATED if changed else UNCHANGED, "PlaylistSOP", f"Trilha {playlist_id} → Item {protocol_id or sop_id}", dry_run)
+
+
 async def upsert_protocol(db, plan: HealthPlan, patient_type: PatientType,
                            title: str, content_obj: list, dry_run: bool):
     """Upsert por (health_plan_id, patient_type)."""
@@ -336,6 +384,39 @@ async def run(dry_run: bool = False):
             if plan_name in created_plans:
                 await upsert_protocol(db, created_plans[plan_name],
                                       patient_type, title, content, dry_run)
+
+        if not dry_run:
+            await db.flush()
+
+        # ── 5. Trilhas de Capacitação (Onboarding) ───────────────────────────
+        print("\n🚀 Trilhas de Capacitação (Onboarding):")
+        
+        # Precisamos do ID do administrador para setar como criador
+        res_admin = await db.execute(select(User).where(User.email == "admin@admin.com"))
+        admin_user = res_admin.scalar_one()
+        
+        playlist_configs = [
+            ("Capacitação UNIMED", "Trilha completa para atendimento de pacientes UNIMED (Externo e Urgência).", "UNIMED"),
+            ("Capacitação IPSEMG", "Guia de autorização e internação para o convênio IPSEMG.", "IPSEMG"),
+            ("Capacitação IPSM", "Procedimentos de internação via sistema SIGAS (IPSM).", "IPSM"),
+            ("Capacitação CASSI", "Orientações para atendimento e validação CASSI.", "CASSI"),
+        ]
+
+        for title, desc, plan_name in playlist_configs:
+            playlist = await upsert_playlist(db, title, desc, admin_user.id, dry_run)
+            
+            if playlist or dry_run:
+                # Buscar protocolos deste plano para vincular à trilha
+                plan = created_plans.get(plan_name)
+                if plan:
+                    res_proto = await db.execute(
+                        select(AttendanceProtocol).where(AttendanceProtocol.health_plan_id == plan.id).order_by(AttendanceProtocol.id)
+                    )
+                    plan_protocols = res_proto.scalars().all()
+                    
+                    for idx, proto in enumerate(plan_protocols):
+                        p_id = playlist.id if playlist else 0
+                        await upsert_playlist_item(db, p_id, protocol_id=proto.id, order_index=idx, dry_run=dry_run)
 
         if not dry_run:
             await db.commit()
