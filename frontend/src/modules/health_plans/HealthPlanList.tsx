@@ -84,7 +84,7 @@ export function HealthPlanList() {
             >
               Voltar
             </Button>
-            <Title order={2} c="mediBlue">Planos de Saúde ({sectorName})</Title>
+            <Title order={2} c="sipopsGreen">Planos de Saúde ({sectorName})</Title>
           </Group>
         </Group>
 
@@ -136,7 +136,7 @@ export function HealthPlanList() {
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <Text fw={700} size="xl" c="mediBlue">{plan.name.charAt(0)}</Text>
+                      <Text fw={700} size="xl" c="sipopsGreen">{plan.name.charAt(0)}</Text>
                     </div>
                   )}
                 </Center>

@@ -56,7 +56,7 @@ export function Register() {
 
   return (
     <Container size={420} my={40}>
-      <Title ta="center" order={1} c="mediBlue">
+      <Title ta="center" order={1} c="sipopsGreen">
         MediCore
       </Title>
       <Text c="dimmed" size="sm" ta="center" mt={5}>

@@ -61,7 +61,7 @@ export const OnboardingDetail = () => {
 
         <Group justify="space-between" align="flex-start">
           <Stack gap="xs" style={{ flex: 1 }}>
-            <Title order={1} c="mediBlue">{playlist.title}</Title>
+            <Title order={1} c="sipopsGreen">{playlist.title}</Title>
             <Text c="dimmed" size="lg">
               {playlist.description || "Nenhuma descrição detalhada disponível."}
             </Text>
@@ -79,17 +79,17 @@ export const OnboardingDetail = () => {
           <Stack gap="sm">
             <Group justify="space-between">
               <Group gap="xs">
-                <BookOpen size={20} color="var(--mantine-color-mediBlue-6)" />
+                <BookOpen size={20} color="var(--mantine-color-sipopsGreen-6)" />
                 <Title order={3}>Progresso da Trilha</Title>
               </Group>
-              <Badge size="lg" color={percentage === 100 ? 'green' : 'mediBlue'}>
+              <Badge size="lg" color={percentage === 100 ? 'green' : 'sipopsGreen'}>
                 {percentage.toFixed(0)}%
               </Badge>
             </Group>
             
             <Progress 
               value={percentage} 
-              color={percentage === 100 ? 'green' : 'mediBlue'} 
+              color={percentage === 100 ? 'green' : 'sipopsGreen'} 
               size="xl" 
               radius="xl" 
             />
@@ -130,7 +130,7 @@ export const OnboardingDetail = () => {
                     }}
                     onClick={() => navigate(path)}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--mantine-color-mediBlue-outlineHover)';
+                      e.currentTarget.style.borderColor = 'var(--mantine-color-sipopsGreen-outlineHover)';
                       e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-0)';
                     }}
                     onMouseLeave={(e) => {
@@ -143,14 +143,14 @@ export const OnboardingDetail = () => {
                         size="xl" 
                         radius="xl" 
                         variant="light" 
-                        color={isProtocol ? "teal" : "mediBlue"}
+                        color={isProtocol ? "teal" : "sipopsGreen"}
                         style={{ flexShrink: 0 }}
                       >
                         {index + 1}
                       </ThemeIcon>
                       
                       <Stack gap={4} style={{ flexGrow: 1 }}>
-                        <Title order={5} c="mediBlue">{title}</Title>
+                        <Title order={5} c="sipopsGreen">{title}</Title>
                         <Group gap="xs">
                           <Badge size="xs" color={isProtocol ? "teal" : "gray"} variant="outline">
                             {category}

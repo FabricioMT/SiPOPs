@@ -147,7 +147,7 @@ export function HealthPlanDetail() {
           >
             Voltar
           </Button>
-          <Title order={2} c="mediBlue">{plan.name}</Title>
+          <Title order={2} c="sipopsGreen">{plan.name}</Title>
         </Group>
       </Group>
 
@@ -238,7 +238,7 @@ export function HealthPlanDetail() {
               <Card shadow="sm" padding="lg" radius="md" withBorder>
                 <Group justify="space-between" wrap="nowrap">
                   <Group wrap="nowrap">
-                    <ThemeIcon variant="light" color="mediBlue" size="lg">
+                    <ThemeIcon variant="light" color="sipopsGreen" size="lg">
                       <FileText size={24} />
                     </ThemeIcon>
                     <div>

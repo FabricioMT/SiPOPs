@@ -9,6 +9,8 @@ import {
   Container,
   Group,
   Button,
+  Image,
+  Stack,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useNavigate } from 'react-router-dom';
@@ -66,10 +68,16 @@ export function Login() {
 
   return (
     <Container size={420} my={40}>
-      <Title ta="center" order={1} c="mediBlue">
-        SiPOPs
-      </Title>
-      <Text c="dimmed" size="sm" ta="center" mt={5}>
+      <Stack align="center" gap={4} mb={4}>
+        <Image src="/logo.png" h={72} w="auto" fit="contain" />
+        <Title ta="center" order={1} c="sipopsGreen" style={{ letterSpacing: '-1px' }}>
+          SiPOPs
+        </Title>
+        <Text size="xs" c="dimmed" ta="center">
+          Sistema de Instrução aos Procedimentos Operacionais Padrão
+        </Text>
+      </Stack>
+      <Text c="dimmed" size="sm" ta="center" mt={8}>
         Não possui uma conta?{' '}
         <Anchor size="sm" component="button" onClick={() => navigate('/register')}>
           Criar conta
@@ -107,7 +115,7 @@ export function Login() {
             </Text>
           )}
 
-          <Button fullWidth mt="xl" type="submit" loading={loading} color="mediBlue">
+          <Button fullWidth mt="xl" type="submit" loading={loading} color="sipopsGreen">
             Entrar
           </Button>
         </form>

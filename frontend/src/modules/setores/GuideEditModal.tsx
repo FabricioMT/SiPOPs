@@ -96,7 +96,7 @@ export const GuideEditModal = ({ opened, onClose, guide }: GuideEditModalProps) 
 
           <Group justify="flex-end" mt="md">
             <Button variant="subtle" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" color="mediBlue" loading={mutation.isPending}>Salvar Alterações</Button>
+            <Button type="submit" color="sipopsGreen" loading={mutation.isPending}>Salvar Alterações</Button>
           </Group>
         </Stack>
       </form>

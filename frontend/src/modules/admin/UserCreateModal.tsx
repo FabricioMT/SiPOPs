@@ -63,7 +63,7 @@ export const UserCreateModal = ({ opened, onClose }: UserCreateModalProps) => {
       onClose={handleClose} 
       title={
         <Group gap="xs">
-          <UserCheck size={20} color="var(--mantine-color-mediBlue-6)" />
+          <UserCheck size={20} color="var(--mantine-color-sipopsGreen-6)" />
           <Text fw={700}>Cadastrar Novo Colaborador</Text>
         </Group>
       }
@@ -129,7 +129,7 @@ export const UserCreateModal = ({ opened, onClose }: UserCreateModalProps) => {
                 <Button variant="subtle" onClick={handleClose}>
                   Cancelar
                 </Button>
-                <Button type="submit" color="mediBlue" loading={mutation.isPending}>
+                <Button type="submit" color="sipopsGreen" loading={mutation.isPending}>
                   Finalizar Cadastro
                 </Button>
               </Group>
@@ -154,7 +154,7 @@ export const UserCreateModal = ({ opened, onClose }: UserCreateModalProps) => {
                 <div>
                   <Text size="xs" fw={700} c="dimmed" tt="uppercase">Senha Temporária</Text>
                   <Group justify="space-between" wrap="nowrap">
-                    <Text fw={700} size="lg" c="mediBlue" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>
+                    <Text fw={700} size="lg" c="sipopsGreen" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>
                       {createdUser.pass}
                     </Text>
                     <CopyButton value={createdUser.pass}>
@@ -175,7 +175,7 @@ export const UserCreateModal = ({ opened, onClose }: UserCreateModalProps) => {
               ⚠️ Esta senha não será exibida novamente por segurança.
             </Text>
 
-            <Button fullWidth onClick={handleClose} color="mediBlue" mt="md">
+            <Button fullWidth onClick={handleClose} color="sipopsGreen" mt="md">
               Entendido e Copiado
             </Button>
           </Stack>

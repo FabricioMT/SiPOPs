@@ -1,4 +1,4 @@
-import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete, Menu, Avatar, Tooltip, ThemeIcon } from '@mantine/core';
+import { AppShell, Burger, Group, Text, NavLink, Divider, Stack, ActionIcon, useMantineColorScheme, Autocomplete, Menu, Avatar, Tooltip, ThemeIcon, Image } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { 
   LayoutDashboard, ListTodo, MessageSquare, LogOut, 
@@ -118,7 +118,10 @@ export function Layout() {
         <Group h="100%" px="md" justify="space-between" wrap="nowrap">
           <Group wrap="nowrap">
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Text fw={900} size="xl" c="mediBlue" style={{ letterSpacing: '-1px' }}>SiPOPs</Text>
+            <Group gap={8} wrap="nowrap">
+              <Image src="/logo.png" h={34} w="auto" fit="contain" />
+              <Text fw={900} size="xl" c="sipopsGreen" style={{ letterSpacing: '-1px' }}>SiPOPs</Text>
+            </Group>
           </Group>
 
           {user && (
@@ -174,7 +177,7 @@ export function Layout() {
                 <Menu shadow="md" width={220} position="bottom-end" transitionProps={{ transition: 'pop-top-right' }}>
                   <Menu.Target>
                     <Group gap={8} style={{ cursor: 'pointer' }} className="user-menu-trigger">
-                      <Avatar color="mediBlue" radius="xl" size="sm">
+                      <Avatar color="sipopsGreen" radius="xl" size="sm">
                         {user.full_name.charAt(0).toUpperCase()}
                       </Avatar>
                       <Stack gap={0} visibleFrom="sm">
@@ -283,7 +286,7 @@ export function Layout() {
           {user && (
             <Group hiddenFrom="sm" justify="space-between" mb="xs">
               <Group gap="xs">
-                <Avatar color="mediBlue" radius="xl" size="sm">
+                <Avatar color="sipopsGreen" radius="xl" size="sm">
                   {user.full_name.charAt(0).toUpperCase()}
                 </Avatar>
                 <Text size="sm" fw={500}>{user.full_name}</Text>

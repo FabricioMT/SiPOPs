@@ -28,7 +28,7 @@ export const OnboardingList = () => {
     <Container size="lg" py="xl">
       <Stack gap="xl">
         <Stack gap="xs">
-          <Title order={1} c="mediBlue">Trilhas de Capacitação</Title>
+          <Title order={1} c="sipopsGreen">Trilhas de Capacitação</Title>
           <Text c="dimmed">
             Acompanhe seu progresso nas trilhas de treinamento e procedimentos obrigatórios.
           </Text>
@@ -97,13 +97,13 @@ const PlaylistCard = ({ playlist, onClick }: { playlist: any, onClick: () => voi
               <BookOpen size={14} />
               <Text size="xs" fw={500}>Progresso</Text>
             </Group>
-            <Text size="sm" fw={700} c={isCompleted ? 'green' : 'mediBlue'}>
+            <Text size="sm" fw={700} c={isCompleted ? 'green' : 'sipopsGreen'}>
               {percentage.toFixed(0)}%
             </Text>
           </Group>
           <Progress 
             value={percentage} 
-            color={isCompleted ? 'green' : 'mediBlue'} 
+            color={isCompleted ? 'green' : 'sipopsGreen'} 
             size="md" 
             radius="xl" 
           />

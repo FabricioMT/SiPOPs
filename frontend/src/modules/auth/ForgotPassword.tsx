@@ -46,7 +46,7 @@ export function ForgotPassword() {
 
   return (
     <Container size={420} my={80}>
-      <Title ta="center" order={2} c="mediBlue">
+      <Title ta="center" order={2} c="sipopsGreen">
         Esqueci Minha Senha
       </Title>
       

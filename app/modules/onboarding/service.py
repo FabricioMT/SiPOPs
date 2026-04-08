@@ -176,3 +176,30 @@ async def get_all_playlists_progress(db: AsyncSession, user_id: int) -> List[dic
         progress_list.append(progress)
         
     return progress_list
+
+
+
+async def complete_onboarding_item(db: AsyncSession, user_id: int, item_id: int):
+    # Verifica se já existe progresso
+    result = await db.execute(
+        select(UserOnboardingProgress).where(
+            UserOnboardingProgress.user_id == user_id,
+            UserOnboardingProgress.item_id == item_id
+        )
+    )
+    progress = result.scalars().first()
+
+    if not progress:
+        progress = UserOnboardingProgress(
+            user_id=user_id,
+            item_id=item_id,
+            completed=True,
+            completed_at=datetime.utcnow()
+        )
+        db.add(progress)
+    else:
+        progress.completed = True
+        progress.completed_at = datetime.utcnow()
+    
+    await db.commit()
+    return progress

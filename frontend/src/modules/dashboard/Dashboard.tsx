@@ -42,7 +42,7 @@ export const Dashboard = () => {
         {/* Welcome Header */}
         <Box>
           <Title order={1} fw={800}>
-            <Text span variant="gradient" gradient={{ from: 'mediBlue', to: 'blue', deg: 45 }} inherit>
+            <Text span variant="gradient" gradient={{ from: 'sipopsGreen', to: 'blue', deg: 45 }} inherit>
               Olá, {user?.email.split('@')[0]}!
             </Text>
           </Title>
@@ -53,14 +53,14 @@ export const Dashboard = () => {
 
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
           {/* Featured SOP Card (SOP #1) */}
-          <Paper withBorder p="xl" radius="lg" shadow="md" style={{ borderLeft: '6px solid var(--mantine-color-mediBlue-6)' }}>
+          <Paper withBorder p="xl" radius="lg" shadow="md" style={{ borderLeft: '6px solid var(--mantine-color-sipopsGreen-6)' }}>
             <Stack justify="space-between" h="100%">
               <Box>
                 <Group justify="space-between" mb="xs">
-                  <Badge color="mediBlue" variant="light" leftSection={<Star size={12} fill="currentColor" />}>
+                  <Badge color="sipopsGreen" variant="light" leftSection={<Star size={12} fill="currentColor" />}>
                     Destaque
                   </Badge>
-                  <ThemeIcon size="lg" radius="md" variant="light" color="mediBlue">
+                  <ThemeIcon size="lg" radius="md" variant="light" color="sipopsGreen">
                     <BookOpen size={20} />
                   </ThemeIcon>
                 </Group>
@@ -71,7 +71,7 @@ export const Dashboard = () => {
               </Box>
               <Button
                 variant="filled"
-                color="mediBlue"
+                color="sipopsGreen"
                 radius="md"
                 onClick={() => navigate('/sops/1')}
                 rightSection={<ArrowRight size={16} />}

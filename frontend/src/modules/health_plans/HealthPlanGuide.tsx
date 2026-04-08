@@ -143,7 +143,7 @@ function StepCard({
         <Box p="lg">
           <Group gap="xs" mb={12}>
             <ListChecks size={16} color="#1a6fc4" />
-            <Text size="sm" fw={600} c="mediBlue">O que fazer:</Text>
+            <Text size="sm" fw={600} c="sipopsGreen">O que fazer:</Text>
           </Group>
           <Stack gap={8}>
             {step.instructions.map((line, i) => (
@@ -302,7 +302,7 @@ export function HealthPlanGuide() {
     return (
       <Center h="60vh">
         <Stack align="center" gap="md">
-          <Loader size="xl" type="dots" color="mediBlue" />
+          <Loader size="xl" type="dots" color="sipopsGreen" />
           <Text c="dimmed">Carregando guia de treinamento...</Text>
         </Stack>
       </Center>
@@ -356,7 +356,7 @@ export function HealthPlanGuide() {
                   style={{ opacity: 0.9 }}
                 />
               )}
-              <Title order={1} c="mediBlue">{plan?.name}</Title>
+              <Title order={1} c="sipopsGreen">{plan?.name}</Title>
               <Badge color={patientColor} variant="light" size="lg" leftSection={patientIcon}>
                 {patientLabel}
               </Badge>

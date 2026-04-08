@@ -77,7 +77,7 @@ export const TUSSList = () => {
               <Table.Td colSpan={3}>
                 <Center py="xl">
                   <Stack align="center" gap="xs">
-                    <Loader size="md" type="dots" color="mediBlue" />
+                    <Loader size="md" type="dots" color="sipopsGreen" />
                     <Text size="sm" c="dimmed">Buscando na base de dados...</Text>
                   </Stack>
                 </Center>
@@ -103,7 +103,7 @@ export const TUSSList = () => {
               <Table.Tr key={item.id}>
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
-                    <Hash size={14} color="var(--mantine-color-mediBlue-6)" />
+                    <Hash size={14} color="var(--mantine-color-sipopsGreen-6)" />
                     <Text fw={700} size="sm" style={{ fontFamily: 'monospace' }}>{item.code}</Text>
                   </Group>
                 </Table.Td>
@@ -115,7 +115,7 @@ export const TUSSList = () => {
                     {({ copied, copy }) => (
                       <Tooltip label={copied ? 'Copiado!' : 'Copiar código'} withArrow position="right">
                         <ActionIcon
-                          color={copied ? 'teal' : 'mediBlue'}
+                          color={copied ? 'teal' : 'sipopsGreen'}
                           variant="subtle"
                           onClick={() => {
                             copy();
@@ -140,7 +140,7 @@ export const TUSSList = () => {
     <Container size="lg" py="xl">
       <Stack gap="xl">
         <Stack gap="xs">
-          <Title order={1} c="mediBlue">Tabela TUSS</Title>
+          <Title order={1} c="sipopsGreen">Tabela TUSS</Title>
           <Text c="dimmed">
             Consulta rápida à Terminologia Unificada da Saúde Suplementar.
           </Text>
@@ -178,7 +178,7 @@ export const TUSSList = () => {
                   total={10} 
                   value={page} 
                   onChange={setPage} 
-                  color="mediBlue" 
+                  color="sipopsGreen" 
                   radius="xl"
                   withEdges
                 />

@@ -73,7 +73,7 @@ export function ResetPassword() {
 
   return (
     <Container size={420} my={80}>
-      <Title ta="center" order={2} c="mediBlue">
+      <Title ta="center" order={2} c="sipopsGreen">
         Redefinir Senha
       </Title>
       <Text c="dimmed" size="sm" ta="center" mt={5}>

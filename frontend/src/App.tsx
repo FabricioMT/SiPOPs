@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (isLoadingAuth) {
     return (
       <Center h="100vh">
-        <Loader size="xl" type="bars" color="mediBlue" />
+        <Loader size="xl" type="bars" color="sipopsGreen" />
       </Center>
     );
   }

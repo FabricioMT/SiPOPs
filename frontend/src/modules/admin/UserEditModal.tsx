@@ -120,7 +120,7 @@ export const UserEditModal = ({ opened, onClose, user }: UserEditModalProps) => 
               <Button variant="subtle" onClick={onClose} disabled={mutation.isPending}>
                 Cancelar
               </Button>
-              <Button type="submit" color="mediBlue" loading={mutation.isPending}>
+              <Button type="submit" color="sipopsGreen" loading={mutation.isPending}>
                 Salvar Alterações
               </Button>
             </Group>

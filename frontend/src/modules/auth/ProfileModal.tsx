@@ -123,7 +123,7 @@ export const ProfileModal = ({ opened, onClose }: ProfileModalProps) => {
                 />
                 <Group justify="flex-end" mt="md">
                   <Button variant="subtle" onClick={onClose}>Cancelar</Button>
-                  <Button type="submit" color="mediBlue" loading={updateProfileMutation.isPending}>
+                  <Button type="submit" color="sipopsGreen" loading={updateProfileMutation.isPending}>
                     Salvar Alterações
                   </Button>
                 </Group>
@@ -157,7 +157,7 @@ export const ProfileModal = ({ opened, onClose }: ProfileModalProps) => {
                 />
                 <Group justify="flex-end" mt="md">
                   <Button variant="subtle" onClick={onClose}>Cancelar</Button>
-                  <Button type="submit" color="mediBlue" loading={updatePasswordMutation.isPending}>
+                  <Button type="submit" color="sipopsGreen" loading={updatePasswordMutation.isPending}>
                     Alterar Senha
                   </Button>
                 </Group>

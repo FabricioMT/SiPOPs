@@ -99,8 +99,8 @@ export const UsersList = () => {
         <Group justify="space-between" align="flex-end">
           <Stack gap="xs">
             <Group gap="sm">
-              <Users size={28} color="var(--mantine-color-mediBlue-6)" />
-              <Title order={1} c="mediBlue">Gestão de Equipe</Title>
+              <Users size={28} color="var(--mantine-color-sipopsGreen-6)" />
+              <Title order={1} c="sipopsGreen">Gestão de Equipe</Title>
             </Group>
             <Text c="dimmed">Administre os colaboradores e acompanhe o progresso do Onboarding.</Text>
           </Stack>
@@ -108,7 +108,7 @@ export const UsersList = () => {
           <Button 
             leftSection={<UserCheck size={16} />} 
             variant="light" 
-            color="mediBlue"
+            color="sipopsGreen"
             onClick={openCreate}
           >
             Novo Colaborador
@@ -142,7 +142,7 @@ export const UsersList = () => {
                   <Table.Tr key={user.id}>
                     <Table.Td>
                       <Group gap="sm">
-                        <Avatar color="mediBlue" radius="xl">
+                        <Avatar color="sipopsGreen" radius="xl">
                           {user.full_name.charAt(0).toUpperCase()}
                         </Avatar>
                         <Stack gap={0}>
@@ -171,7 +171,7 @@ export const UsersList = () => {
                       <Group justify="flex-end" gap="xs">
                         <Button 
                           variant="subtle" 
-                          color="mediBlue" 
+                          color="sipopsGreen" 
                           size="xs"
                           leftSection={<Eye size={14} />}
                           onClick={() => handleShowProgress(user)}
