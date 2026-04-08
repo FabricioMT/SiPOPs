@@ -23,14 +23,22 @@ async def list_guides(
     """List SPDATA guides, optionally filtered by sector and patient type. (RBAC applied)"""
     
     # RBAC Logic
-    if current_user.role not in [UserRole.ADMIN, UserRole.GESTOR]:
-        # Map user role to SectorType
+    user_roles = current_user.role_names
+    is_manager = any(r in [UserRole.ADMIN, UserRole.GESTOR] for r in user_roles)
+
+    if not is_manager:
+        # Map user role to SectorType - find the first matching role
         role_sector_map = {
             UserRole.SEC_UE_SUS: SectorType.UE_SUS,
             UserRole.SEC_PA: SectorType.PA,
             UserRole.SEC_PORTARIA: SectorType.PORTARIA
         }
-        user_sector = role_sector_map.get(current_user.role)
+        
+        user_sector = None
+        for role in user_roles:
+            if role in role_sector_map:
+                user_sector = role_sector_map[role]
+                break
         
         if not user_sector:
             return [] # Unrecognized role sees nothing
