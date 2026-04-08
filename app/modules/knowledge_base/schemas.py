@@ -16,6 +16,7 @@ class AttendanceProtocolResponse(BaseModel):
     title: str
     content: Optional[str] = None
     images_json: Optional[str] = None
+    min_reading_seconds: int = 30
 
     class Config:
         from_attributes = True
@@ -91,6 +92,7 @@ class SOPResponse(SOPBase):
     created_at: datetime
     updated_at: datetime
     current_version_number: Optional[int] = None
+    min_reading_seconds: int = 30
     
     class Config:
         from_attributes = True

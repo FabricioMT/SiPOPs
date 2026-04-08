@@ -3,7 +3,7 @@ from typing import Optional, List, Union, Any
 
 import bcrypt
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +12,7 @@ from app.core.database import get_db
 
 
 # OAuth2 scheme for token extraction
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -62,29 +62,26 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: Optional[str] = Depends(oauth2_scheme),
+    token_query: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Dependency to get the current authenticated user.
-    
-    Args:
-        token: JWT token from Authorization header.
-        db: Database session.
-    
-    Returns:
-        Current user object.
-    
-    Raises:
-        HTTPException: If token is invalid or user not found.
+    Supports token via Authorization header (OAuth2) or query parameter 'token' (for sendBeacon).
     """
+    actual_token = token or token_query
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    payload = decode_access_token(token)
+    if not actual_token:
+        raise credentials_exception
+    
+    payload = decode_access_token(actual_token)
     if payload is None:
         raise credentials_exception
     

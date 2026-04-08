@@ -71,3 +71,44 @@ class ProgressResponse(BaseModel):
     percentage: float
     read_count: int
     total_count: int
+
+
+class ReadingSyncSchema(BaseModel):
+    """Schema for syncing reading progress."""
+    content_id: str  # e.g., "sop:1", "proto:5", "item:10"
+    seconds: int
+    final: bool = False
+
+
+# ============== Onboarding Item Schemas ==============
+
+class OnboardingItemBase(BaseModel):
+    title: str
+    content: Optional[str] = None
+    order_index: int = 0
+    sector_slug: str = "general"
+    protocol_id: Optional[int] = None
+    sop_id: Optional[int] = None
+
+
+class OnboardingItemCreate(OnboardingItemBase):
+    pass
+
+
+class OnboardingItemUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    order_index: Optional[int] = None
+    sector_slug: Optional[str] = None
+    protocol_id: Optional[int] = None
+    sop_id: Optional[int] = None
+
+
+class OnboardingItemRead(OnboardingItemBase):
+    id: int
+    image_path: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

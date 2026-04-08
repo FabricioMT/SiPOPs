@@ -50,6 +50,7 @@ class AttendanceProtocol(Base):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     images_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array of image URLs
+    min_reading_seconds: Mapped[int] = mapped_column(Integer, default=30, nullable=False)
 
     # Relationship
     health_plan: Mapped["HealthPlan"] = relationship("HealthPlan", back_populates="protocols")
@@ -106,6 +107,7 @@ class SOP(Base):
         default=SOPStatus.DRAFT, 
         nullable=False
     )
+    min_reading_seconds: Mapped[int] = mapped_column(Integer, default=30, nullable=False)
     
     # Optional link to a specific Health Plan
     health_plan_id: Mapped[Optional[int]] = mapped_column(

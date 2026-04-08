@@ -9,9 +9,11 @@ from alembic import context
 
 from app.core.config import settings
 from app.core.database import Base
-from app.modules.auth.models import User  # noqa: F401
-from app.modules.knowledge_base.models import HealthPlan, SOP, SOPVersion, SOPReading  # noqa: F401
-from app.modules.onboarding.models import Playlist, PlaylistSOP  # noqa: F401
+from app.modules.auth.models import User, UserRoleLink  # noqa: F401
+from app.modules.knowledge_base.models import HealthPlan, SOP, SOPVersion, SOPReading, AttendanceProtocol  # noqa: F401
+from app.modules.onboarding.models import Playlist, PlaylistSOP, OnboardingItem, UserOnboardingProgress, ContentReadingLog  # noqa: F401
+from app.modules.spdata_guides.models import SPDATAGuide  # noqa: F401
+from app.modules.tuss.models import TUSSCode, TUSSUsage  # noqa: F401
 from app.modules.chat.models import ChatMessage  # noqa: F401
 
 # this is the Alembic Config object
@@ -36,6 +38,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        render_as_batch=True,
     )
 
     with context.begin_transaction():
@@ -43,7 +46,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection, 
+        target_metadata=target_metadata,
+        render_as_batch=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

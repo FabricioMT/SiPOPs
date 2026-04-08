@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from app.modules.auth.models import User
 from app.modules.knowledge_base.models import SOPVersion, SOPReading, SOP, AttendanceProtocol, ProtocolReading
-from app.modules.onboarding.models import Playlist, PlaylistSOP
+from app.modules.onboarding.models import Playlist, PlaylistSOP, OnboardingItem, UserOnboardingProgress
 from app.modules.onboarding.schemas import PlaylistCreate, PlaylistUpdate
 
 
